@@ -1,6 +1,6 @@
 # Horloq - 拡張可能デスクトップ据え置き時計
 
-> Python + CustomTkinterで作られた、プラグインシステムを備えた高機能デスクトップ時計アプリケーション
+> Horloq(オルロック)はPython + CustomTkinterで作られた、プラグインシステムを備えた高機能デスクトップ時計アプリケーションです。
 
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
