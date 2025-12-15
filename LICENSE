@@ -19,3 +19,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Third-Party Licenses
+
+This project uses the following open-source libraries:
+
+- CustomTkinter (MIT License) - Copyright (c) Tom Schimansky
+- Pillow (HPND License) - Copyright (c) Secret Labs AB, Fredrik Lundh
+- PyYAML (MIT License) - Copyright (c) 2017-2021 Ingy döt Net, Copyright (c) 2006-2016 Kirill Simonov
+- requests (Apache License 2.0) - Copyright 2019 Kenneth Reitz
+- python-dateutil (Apache License 2.0 / BSD-3-Clause) - Copyright (c) Gustavo Niemeyer
+
+See the respective project repositories for full license texts.

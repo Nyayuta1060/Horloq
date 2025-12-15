@@ -92,6 +92,7 @@ Includes hour, minute, and second hands with smooth animation.
 
 Closes #123
 ```
+基本日本語の方針
 
 ## コーディング規約
 
