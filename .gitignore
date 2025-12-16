@@ -136,4 +136,4 @@ Thumbs.db
 # Horloq specific
 config.yaml
 *.log
-plugins/
+/plugins/
