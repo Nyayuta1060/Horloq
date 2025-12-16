@@ -4,13 +4,13 @@
 
 from pathlib import Path
 from typing import Optional
-from .core.config import ConfigManager
-from .core.events import EventManager
-from .core.theme import ThemeManager
-from .plugins.manager import PluginManager
-from .ui.window import MainWindow
-from .ui.clock import DigitalClock
-from .ui.settings import SettingsWindow
+from .config import ConfigManager
+from .events import EventManager
+from .theme import ThemeManager
+from ..plugins.manager import PluginManager
+from ..ui.window import MainWindow
+from ..ui.clock import DigitalClock
+from ..ui.settings import SettingsWindow
 import customtkinter as ctk
 
 
