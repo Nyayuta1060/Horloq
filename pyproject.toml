@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "拡張可能デスクトップ据え置き時計"
 readme = "README.md"
 authors = [
-    {name = "Nyayuta1060", email = ""}
+    {name = "Nyayuta1060"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.11"
