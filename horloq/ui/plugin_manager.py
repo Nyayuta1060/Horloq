@@ -35,12 +35,15 @@ class PluginManagerWindow(ctk.CTkToplevel):
     def _setup_window(self):
         """ウィンドウをセットアップ"""
         self.title("プラグイン管理")
-        self.geometry("600x500")
+        self.geometry("500x600")
         
         # モーダルウィンドウとして表示
         self.transient(self.master)
         # ウィンドウが表示された後にgrab_setを呼ぶ
         self.after(10, self.grab_set)
+        
+        # ウィンドウを閉じるときの処理を設定
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
     
     def _create_widgets(self):
         """ウィジェットを作成"""
@@ -92,7 +95,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
         close_btn = ctk.CTkButton(
             button_frame,
             text="閉じる",
-            command=self.destroy,
+            command=self._on_closing,
         )
         close_btn.pack(side="right", padx=5)
         
@@ -182,3 +185,9 @@ class PluginManagerWindow(ctk.CTkToplevel):
             self.plugin_manager,
             self.on_plugin_changed,
         )
+    
+    def _on_closing(self):
+        """ウィンドウを閉じる"""
+        if self.on_plugin_changed:
+            self.on_plugin_changed()
+        self.destroy()

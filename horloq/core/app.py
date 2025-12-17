@@ -144,6 +144,10 @@ class HorloqApp:
         )
         self.clock_widget.pack(fill="both", expand=True)
         
+        # プラグインウィジェット用のコンテナ
+        self.plugin_container = ctk.CTkFrame(container, fg_color="transparent")
+        self.plugin_container.pack(fill="both", expand=False, pady=(10, 0))
+        
         # コンテキストメニューをセットアップ
         self._setup_context_menu()
     
@@ -187,6 +191,9 @@ class HorloqApp:
         self.config.set("plugins.enabled", enabled_plugins)
         self.config.save()
         
+        # プラグインウィジェットを更新
+        self._display_plugin_widgets()
+        
         print(f"有効なプラグイン: {enabled_plugins}")
     
     def _on_quit(self):
@@ -204,6 +211,28 @@ class HorloqApp:
             else:
                 print(f"プラグインの読み込みに失敗: {plugin_name}")
     
+    def _display_plugin_widgets(self):
+        """有効なプラグインのウィジェットを表示"""
+        if not self.plugin_container:
+            return
+        
+        # 既存のウィジェットをクリア
+        for widget in self.plugin_container.winfo_children():
+            widget.destroy()
+        
+        # 有効なプラグインのウィジェットを表示
+        active_plugins = self.plugins.list_active_plugins()
+        for plugin_name in active_plugins:
+            plugin = self.plugins.get_plugin(plugin_name)
+            if plugin:
+                try:
+                    widget = plugin.create_widget(self.plugin_container)
+                    if widget:
+                        widget.pack(fill="both", expand=False, pady=5)
+                        print(f"プラグインウィジェットを表示: {plugin_name}")
+                except Exception as e:
+                    print(f"プラグインウィジェットの表示エラー ({plugin_name}): {e}")
+    
     def run(self):
         """アプリケーションを起動"""
         # プラグインを読み込む
@@ -211,6 +240,9 @@ class HorloqApp:
         
         # UIを作成
         self._create_ui()
+        
+        # プラグインウィジェットを表示
+        self._display_plugin_widgets()
         
         # イベントを発行
         self.events.emit("app_started")
