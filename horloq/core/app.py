@@ -59,7 +59,8 @@ class HorloqApp:
         dirs = []
         
         # ビルトインプラグイン
-        builtin_dir = Path(__file__).parent / "plugins" / "builtin"
+        # __file__はhorloq/core/app.pyなので、親の親がhorloqディレクトリ
+        builtin_dir = Path(__file__).parent.parent / "plugins" / "builtin"
         if builtin_dir.exists():
             dirs.append(builtin_dir)
         
