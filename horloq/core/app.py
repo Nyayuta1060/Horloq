@@ -12,6 +12,7 @@ from ..ui.window import MainWindow
 from ..ui.clock import DigitalClock
 from ..ui.settings import SettingsWindow
 from ..ui.menu import ContextMenu
+from ..ui.plugin_manager import PluginManagerWindow
 import customtkinter as ctk
 
 
@@ -171,8 +172,21 @@ class HorloqApp:
     
     def _on_plugin_manager(self):
         """プラグイン管理を開く"""
-        # TODO: プラグイン管理UIの実装
-        print("プラグイン管理は今後実装予定です")
+        if self.window:
+            PluginManagerWindow(
+                self.window,
+                self.plugins,
+                on_plugin_changed=self._on_plugin_changed,
+            )
+    
+    def _on_plugin_changed(self):
+        """プラグイン変更時の処理"""
+        # プラグイン設定を保存
+        enabled_plugins = self.plugins.list_enabled_plugins()
+        self.config.set("plugins.enabled", enabled_plugins)
+        self.config.save()
+        
+        print(f"有効なプラグイン: {enabled_plugins}")
     
     def _on_quit(self):
         """アプリケーションを終了"""
