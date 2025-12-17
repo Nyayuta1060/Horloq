@@ -81,7 +81,7 @@ class HorloqApp:
         # プラグインをシャットダウン
         self.plugins.shutdown_all()
     
-    def _on_open_settings(self, event):
+    def _on_open_settings(self):
         """設定画面を開く"""
         if self.window:
             SettingsWindow(

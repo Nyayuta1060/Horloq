@@ -39,7 +39,8 @@ class PluginManagerWindow(ctk.CTkToplevel):
         
         # モーダルウィンドウとして表示
         self.transient(self.master)
-        self.grab_set()
+        # ウィンドウが表示された後にgrab_setを呼ぶ
+        self.after(10, self.grab_set)
     
     def _create_widgets(self):
         """ウィジェットを作成"""
