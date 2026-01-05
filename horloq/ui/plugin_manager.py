@@ -157,13 +157,13 @@ class PluginManagerWindow(ctk.CTkToplevel):
         """プラグインの有効/無効を切り替え"""
         try:
             if enable:
-                success = self.plugin_manager.enable_plugin(plugin_name)
+                success = self.plugin_manager.load_plugin(plugin_name)
                 if success:
                     print(f"プラグイン '{plugin_name}' を有効化しました")
                 else:
                     print(f"プラグイン '{plugin_name}' の有効化に失敗しました")
             else:
-                success = self.plugin_manager.disable_plugin(plugin_name)
+                success = self.plugin_manager.unload_plugin(plugin_name)
                 if success:
                     print(f"プラグイン '{plugin_name}' を無効化しました")
                 else:

@@ -187,12 +187,15 @@ class HorloqApp:
     def _on_plugin_changed(self):
         """プラグイン変更時の処理"""
         # プラグイン設定を保存
-        enabled_plugins = self.plugins.list_enabled_plugins()
+        enabled_plugins = self.plugins.list_active_plugins()
         self.config.set("plugins.enabled", enabled_plugins)
         self.config.save()
         
         # プラグインウィジェットを更新
         self._display_plugin_widgets()
+        
+        # ウィンドウサイズを調整
+        self._adjust_window_size()
         
         print(f"有効なプラグイン: {enabled_plugins}")
     
@@ -224,7 +227,7 @@ class HorloqApp:
         active_plugins = self.plugins.list_active_plugins()
         for plugin_name in active_plugins:
             plugin = self.plugins.get_plugin(plugin_name)
-            if plugin:
+            if plugin and plugin.enabled:
                 try:
                     widget = plugin.create_widget(self.plugin_container)
                     if widget:
@@ -232,6 +235,32 @@ class HorloqApp:
                         print(f"プラグインウィジェットを表示: {plugin_name}")
                 except Exception as e:
                     print(f"プラグインウィジェットの表示エラー ({plugin_name}): {e}")
+    
+    def _adjust_window_size(self):
+        """プラグインウィジェットの有無に応じてウィンドウサイズを調整"""
+        if not self.window or not self.plugin_container:
+            return
+        
+        # ウィンドウを更新して正確なサイズを取得
+        self.window.update_idletasks()
+        
+        # プラグインウィジェットが存在するか確認
+        has_plugin_widgets = len(self.plugin_container.winfo_children()) > 0
+        
+        # 基本的なウィンドウサイズ（時計のみ）
+        base_width = 400
+        base_height = 200
+        
+        if has_plugin_widgets:
+            # プラグインウィジェットのサイズを計算
+            self.plugin_container.update_idletasks()
+            plugin_height = self.plugin_container.winfo_reqheight()
+            new_height = base_height + plugin_height + 40  # マージン追加
+        else:
+            new_height = base_height
+        
+        # ウィンドウサイズを設定
+        self.window.geometry(f"{base_width}x{new_height}")
     
     def run(self):
         """アプリケーションを起動"""
@@ -243,6 +272,9 @@ class HorloqApp:
         
         # プラグインウィジェットを表示
         self._display_plugin_widgets()
+        
+        # ウィンドウサイズを調整
+        self._adjust_window_size()
         
         # イベントを発行
         self.events.emit("app_started")
