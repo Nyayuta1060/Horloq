@@ -39,11 +39,14 @@ class SettingsWindow(ctk.CTkToplevel):
     def _setup_window(self):
         """ウィンドウをセットアップ"""
         self.title("設定")
-        self.geometry("600x500")
+        self.geometry("650x600")
         
         # モーダルウィンドウとして表示
         self.transient(self.master)
-        self.grab_set()
+        
+        # ウィンドウを表示してからgrab_setを呼ぶ
+        self.update_idletasks()
+        self.after(10, self.grab_set)
     
     def _create_widgets(self):
         """ウィジェットを作成"""
@@ -176,10 +179,10 @@ class SettingsWindow(ctk.CTkToplevel):
         tab = self.tabview.tab("テーマ")
         
         # テーマ選択
-        theme_label = ctk.CTkLabel(tab, text="テーマ:")
-        theme_label.pack(anchor="w", padx=20, pady=10)
+        theme_label = ctk.CTkLabel(tab, text="テーマ:", font=("Arial", 14, "bold"))
+        theme_label.pack(anchor="w", padx=20, pady=(10, 5))
         
-        current_theme = self.config.get("theme.name", "dark")
+        current_theme = self.config.get("theme.name", "vscode_dark")
         themes = self.themes.list_themes()
         
         self.theme_var = ctk.StringVar(value=current_theme)
@@ -187,8 +190,20 @@ class SettingsWindow(ctk.CTkToplevel):
             tab,
             values=themes,
             variable=self.theme_var,
+            command=self._on_theme_change,
         )
         theme_menu.pack(fill="x", padx=20, pady=5)
+        
+        # プレビューフレーム
+        preview_label = ctk.CTkLabel(tab, text="プレビュー:", font=("Arial", 14, "bold"))
+        preview_label.pack(anchor="w", padx=20, pady=(20, 5))
+        
+        self.preview_frame = ctk.CTkFrame(tab, height=200)
+        self.preview_frame.pack(fill="x", padx=20, pady=5)
+        self.preview_frame.pack_propagate(False)
+        
+        # プレビューを更新
+        self._update_theme_preview()
     
     def _create_window_tab(self):
         """ウィンドウタブを作成"""
@@ -229,6 +244,63 @@ class SettingsWindow(ctk.CTkToplevel):
             width=40,
         )
         opacity_value_label.pack(side="left", padx=5)
+    
+    def _on_theme_change(self, theme_name: str):
+        """テーマ変更イベント処理"""
+        self._update_theme_preview()
+    
+    def _update_theme_preview(self):
+        """テーマプレビューを更新"""
+        # 既存のウィジェットをクリア
+        for widget in self.preview_frame.winfo_children():
+            widget.destroy()
+        
+        # 選択されたテーマを取得
+        theme_name = self.theme_var.get()
+        theme = self.themes.get_theme(theme_name)
+        
+        if not theme:
+            return
+        
+        # プレビューフレームの背景色を設定
+        self.preview_frame.configure(fg_color=theme.bg)
+        
+        # サンプルテキスト
+        sample_frame = ctk.CTkFrame(
+            self.preview_frame,
+            fg_color=theme.bg_secondary,
+            border_color=theme.border,
+            border_width=2,
+        )
+        sample_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # タイトル
+        title = ctk.CTkLabel(
+            sample_frame,
+            text="23:45:30",
+            font=("Arial", 36, "bold"),
+            text_color=theme.fg,
+        )
+        title.pack(pady=(20, 5))
+        
+        # サブタイトル
+        subtitle = ctk.CTkLabel(
+            sample_frame,
+            text="2026年1月6日",
+            font=("Arial", 14),
+            text_color=theme.fg_secondary,
+        )
+        subtitle.pack(pady=(0, 10))
+        
+        # アクセントボタン
+        button = ctk.CTkButton(
+            sample_frame,
+            text="アクセントカラー",
+            fg_color=theme.accent,
+            hover_color=theme.hover,
+            text_color=theme.bg,
+        )
+        button.pack(pady=(5, 20))
     
     def _save_settings(self):
         """設定を保存"""

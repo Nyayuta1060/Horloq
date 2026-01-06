@@ -30,11 +30,11 @@ class ConfigManager:
             "font_size": 48,
         },
         "theme": {
-            "name": "dark",
+            "name": "vscode_dark",
             "custom_colors": {
-                "bg": "#1a1a1a",
-                "fg": "#ffffff",
-                "accent": "#00a8ff",
+                "bg": "#1e1e1e",
+                "fg": "#d4d4d4",
+                "accent": "#007acc",
             },
         },
         "plugins": {

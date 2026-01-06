@@ -38,23 +38,42 @@ class ContextMenu:
         # ウィンドウ装飾を削除
         self.menu.overrideredirect(True)
         
+        # メニューの背景色とボーダーを設定
+        self.menu.configure(fg_color="#1e1e1e")
+        
+        # メニューコンテナ（ボーダー用）
+        menu_container = ctk.CTkFrame(
+            self.menu,
+            fg_color="#1e1e1e",
+            border_color="#3e3e42",
+            border_width=1,
+        )
+        menu_container.pack(fill="both", expand=True)
+        
         # メニュー項目を追加
         for label, callback in items:
             if label == "---":
                 # セパレータ
-                separator = ctk.CTkFrame(self.menu, height=1, fg_color="gray30")
-                separator.pack(fill="x", padx=5, pady=2)
+                separator = ctk.CTkFrame(
+                    menu_container, 
+                    height=1, 
+                    fg_color="#3e3e42"
+                )
+                separator.pack(fill="x", padx=8, pady=4)
             else:
                 btn = ctk.CTkButton(
-                    self.menu,
+                    menu_container,
                     text=label,
                     command=lambda cb=callback: self._on_item_click(cb),
                     fg_color="transparent",
-                    hover_color="gray25",
+                    hover_color="#2a2a2a",
+                    text_color="#cccccc",
                     anchor="w",
-                    height=30,
+                    height=32,
+                    font=("Segoe UI", 13),
+                    corner_radius=4,
                 )
-                btn.pack(fill="x", padx=2, pady=1)
+                btn.pack(fill="x", padx=4, pady=2)
         
         # メニューの位置を設定
         self.menu.geometry(f"+{event.x_root}+{event.y_root}")
