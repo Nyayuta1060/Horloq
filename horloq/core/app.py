@@ -164,8 +164,6 @@ class HorloqApp:
                 ("---", None),
                 ("プラグイン管理", self._on_plugin_manager),
                 ("---", None),
-                ("テーマ変更", self._show_theme_submenu),
-                ("---", None),
                 ("終了", self._on_quit),
             ]
             self.context_menu.show(event, menu_items)
@@ -183,65 +181,6 @@ class HorloqApp:
                 self.plugins,
                 on_plugin_changed=self._on_plugin_changed,
             )
-    
-    def _show_theme_submenu(self):
-        """テーマ選択サブメニューを表示"""
-        if not self.window:
-            return
-        
-        # テーマ選択ウィンドウを作成
-        theme_window = ctk.CTkToplevel(self.window)
-        theme_window.title("テーマ選択")
-        theme_window.geometry("300x400")
-        theme_window.transient(self.window)
-        
-        # ウィンドウを表示してからgrab_setを呼ぶ
-        theme_window.update_idletasks()
-        theme_window.after(10, theme_window.grab_set)
-        
-        # タイトル
-        title_label = ctk.CTkLabel(
-            theme_window,
-            text="テーマを選択",
-            font=("Arial", 16, "bold"),
-        )
-        title_label.pack(pady=20)
-        
-        # スクロール可能なフレーム
-        scroll_frame = ctk.CTkScrollableFrame(theme_window)
-        scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        current_theme = self.config.get("theme.name", "vscode_dark")
-        
-        # 各テーマのボタンを作成
-        for theme_key in self.themes.list_themes():
-            theme = self.themes.get_theme(theme_key)
-            if theme:
-                frame = ctk.CTkFrame(
-                    scroll_frame,
-                    fg_color=theme.bg,
-                    border_color=theme.border,
-                    border_width=2 if theme_key == current_theme else 1,
-                )
-                frame.pack(fill="x", pady=5)
-                
-                btn = ctk.CTkButton(
-                    frame,
-                    text=theme.name,
-                    fg_color=theme.accent,
-                    hover_color=theme.hover,
-                    text_color=theme.fg,
-                    command=lambda tk=theme_key: self._change_theme(tk, theme_window),
-                )
-                btn.pack(fill="x", padx=10, pady=10)
-    
-    def _change_theme(self, theme_name: str, window: ctk.CTkToplevel):
-        """テーマを変更"""
-        if self.themes.set_theme(theme_name):
-            self.config.set("theme.name", theme_name)
-            self.config.save()
-            self.events.emit("theme_changed")
-            window.destroy()
     
     def _on_plugin_changed(self):
         """プラグイン変更時の処理"""
