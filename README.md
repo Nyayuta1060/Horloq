@@ -65,21 +65,72 @@ python -m horloq
 
 ## 📦 プラグイン
 
-以下のプラグインが利用可能です：
+Horloqはプラグインシステムにより機能を拡張できます。すべてのプラグインはユーザーが必要に応じてインストールできます。
 
-| プラグイン | 説明 | ステータス |
-|----------|------|----------|
-| 👋 **Hello** | サンプルプラグイン | ✅ 実装済み |
-| ⏱️ **タイマー** | カウントダウンタイマー（プリセット機能付き） | ✅ 実装済み |
-| ⏲️ **ストップウォッチ** | 精密時間計測（ラップタイム機能付き） | ✅ 実装済み |
-| 🌤️ **天気** | 現在の天気と気温を表示 | 計画中 |
-| 📅 **カレンダー** | 月表示カレンダーと祝日表示 | 計画中 |
+### 公式プラグイン
 
-### プラグインの使い方
+| プラグイン             | 説明                                         |
+| ---------------------- | -------------------------------------------- |
+| 👋 **Hello**            | サンプルプラグイン                           |
+| ⏱️ **タイマー**         | カウントダウンタイマー（プリセット機能付き） |
+| ⏲️ **ストップウォッチ** | 精密時間計測（ラップタイム機能付き）         |
+
+公式プラグインは別リポジトリで管理されています。詳細は [公式プラグイン集](https://github.com/Nyayuta1060/horloq-official-plugins)（準備中）を参照してください。
+
+### プラグインの管理
+
+#### GUIから
 
 1. 右クリックメニューから「プラグイン管理」を選択
-2. 使いたいプラグインにチェックを入れる
-3. プラグイン固有のウィンドウが開く（タイマー、ストップウォッチなど）
+2. **公式プラグインをインストール:**
+   - 「カタログから選択」をクリック
+   - `Nyayuta1060/horloq-official-plugins`を入力（準備中）
+   - 一覧から必要なプラグインを選択してインストール
+3. **サードパーティプラグインをインストール:**
+   - 「GitHubからインストール」- 単一プラグインをURLから直接インストール
+   - 「カタログから選択」- モノレポのプラグイン一覧から選択してインストール
+
+#### CLIから
+
+```bash
+# 公式プラグインをインストール（準備中）
+python -m horloq plugin install Nyayuta1060/horloq-official-plugins:hello
+python -m horloq plugin install Nyayuta1060/horloq-official-plugins:timer
+
+# サードパーティプラグインをインストール
+python -m horloq plugin install username/horloq-plugin-example
+
+# モノレポから特定のプラグインをインストール
+python -m horloq plugin install username/horloq-plugins:weather
+
+# プラグインをアンインストール
+python -m horloq plugin uninstall hello
+
+# インストール済みプラグイン一覧
+python -m horloq plugin list
+```
+
+### プラグイン開発
+
+独自のプラグインを作成・配布できます。詳細は [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) を参照してください。
+公式プラグインのサンプルコードは [サンプルプラグイン集](docs/EXAMPLE_PLUGINS.md) で確認できます。
+#### 簡単な例
+
+1. GitHubでリポジトリ作成（例: `horloq-plugin-myfeature`）
+2. プラグインファイルを作成：
+
+```
+horloq-plugin-myfeature/
+├── plugin.yaml       # メタデータ
+├── __init__.py      # プラグイン本体
+└── README.md
+```
+
+3. ユーザーはこうインストール：
+
+```bash
+python -m horloq plugin install yourusername/horloq-plugin-myfeature
+```
 
 ## 🔧 開発
 
@@ -108,20 +159,34 @@ python -m horloq
 独自のプラグインを作成する方法：
 
 ```python
-# plugins/my-plugin/plugin.py
+# __init__.py
 from horloq.plugins.base import PluginBase
+import customtkinter as ctk
 
-class Plugin(PluginBase):
-    def activate(self):
-        print("My plugin activated!")
-        # 初期化処理
+class MyPlugin(PluginBase):
+    def __init__(self, app_context):
+        super().__init__(
+            name="my_plugin",
+            version="1.0.0",
+            author="Your Name",
+            description="My awesome plugin",
+            app_context=app_context,
+        )
     
-    def deactivate(self):
-        print("My plugin deactivated!")
-        # クリーンアップ処理
+    def initialize(self):
+        return True
+    
+    def create_widget(self, parent):
+        frame = ctk.CTkFrame(parent)
+        label = ctk.CTkLabel(frame, text="Hello from my plugin!")
+        label.pack(pady=10)
+        return frame
+
+# プラグインクラスをエクスポート
+Plugin = MyPlugin
 ```
 
-詳細は [開発ガイド](docs/DEVELOPMENT.md) を参照してください。
+詳細は [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) を参照してください。
 
 ### ビルド
 

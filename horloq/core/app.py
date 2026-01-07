@@ -56,20 +56,10 @@ class HorloqApp:
     
     def _get_plugin_dirs(self) -> list[Path]:
         """プラグインディレクトリのリストを取得"""
-        dirs = []
-        
-        # ビルトインプラグイン
-        # __file__はhorloq/core/app.pyなので、親の親がhorloqディレクトリ
-        builtin_dir = Path(__file__).parent.parent / "plugins" / "builtin"
-        if builtin_dir.exists():
-            dirs.append(builtin_dir)
-        
-        # ユーザープラグイン
+        # ユーザープラグインディレクトリのみ
         user_plugin_dir = self.config.config_path.parent / "plugins"
         user_plugin_dir.mkdir(parents=True, exist_ok=True)
-        dirs.append(user_plugin_dir)
-        
-        return dirs
+        return [user_plugin_dir]
     
     def _setup_event_listeners(self):
         """イベントリスナーをセットアップ"""
