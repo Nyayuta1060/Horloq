@@ -36,13 +36,28 @@ class PluginLoader:
             if not plugin_dir.exists():
                 continue
             
-            # Pythonファイルを検索
+            # ディレクトリ形式のプラグインを検索（__init__.pyを含む）
+            for dir_path in plugin_dir.iterdir():
+                if not dir_path.is_dir():
+                    continue
+                if dir_path.name.startswith("_"):
+                    continue
+                
+                # __init__.pyがあればプラグインとして認識
+                init_file = dir_path / "__init__.py"
+                if init_file.exists():
+                    plugin_name = dir_path.name
+                    discovered.append(plugin_name)
+                    continue
+            
+            # レガシー形式: 単一Pythonファイル
             for file_path in plugin_dir.glob("*.py"):
                 if file_path.name.startswith("_"):
                     continue
                 
                 plugin_name = file_path.stem
-                discovered.append(plugin_name)
+                if plugin_name not in discovered:
+                    discovered.append(plugin_name)
         
         return discovered
     
@@ -119,6 +134,14 @@ class PluginLoader:
             プラグインファイルのパス（見つからない場合はNone）
         """
         for plugin_dir in self.plugin_dirs:
+            # ディレクトリ形式（優先）
+            plugin_package = plugin_dir / plugin_name
+            if plugin_package.is_dir():
+                init_file = plugin_package / "__init__.py"
+                if init_file.exists():
+                    return init_file
+            
+            # 単一ファイル形式（レガシー）
             plugin_file = plugin_dir / f"{plugin_name}.py"
             if plugin_file.exists():
                 return plugin_file
@@ -135,6 +158,15 @@ class PluginLoader:
         Returns:
             プラグインクラス（見つからない場合はNone）
         """
+        # まず、'Plugin'という名前のエクスポートを確認（推奨）
+        if hasattr(module, 'Plugin'):
+            plugin_class = getattr(module, 'Plugin')
+            if (isinstance(plugin_class, type) and 
+                issubclass(plugin_class, PluginBase) and 
+                plugin_class is not PluginBase):
+                return plugin_class
+        
+        # 次に、PluginBaseのサブクラスを検索
         for name in dir(module):
             obj = getattr(module, name)
             

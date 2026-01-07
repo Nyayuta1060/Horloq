@@ -43,7 +43,8 @@ class PluginManagerWindow(ctk.CTkToplevel):
     def _setup_window(self):
         """ウィンドウをセットアップ"""
         self.title("プラグイン管理")
-        self.geometry("500x600")
+        self.geometry("650x650")
+        self.minsize(600, 500)
         
         # モーダルウィンドウとして表示
         self.transient(self.master)
@@ -147,16 +148,8 @@ class PluginManagerWindow(ctk.CTkToplevel):
                 )
         
         # ボタンフレーム
-        button_frame = ctk.CTkFrame(self)
+        button_frame = ctk.CTkFrame(self, fg_color="transparent")
         button_frame.pack(fill="x", padx=20, pady=20)
-        
-        # 閉じるボタン
-        close_btn = ctk.CTkButton(
-            button_frame,
-            text="閉じる",
-            command=self._on_closing,
-        )
-        close_btn.pack(side="right", padx=5)
         
         # 再読み込みボタン
         reload_btn = ctk.CTkButton(
@@ -165,8 +158,20 @@ class PluginManagerWindow(ctk.CTkToplevel):
             command=self._reload_plugins,
             fg_color="gray",
             hover_color="darkgray",
+            width=120,
+            height=35,
         )
         reload_btn.pack(side="right", padx=5)
+        
+        # 閉じるボタン
+        close_btn = ctk.CTkButton(
+            button_frame,
+            text="閉じる",
+            command=self._on_closing,
+            width=120,
+            height=35,
+        )
+        close_btn.pack(side="right", padx=5)
     
     def _show_install_dialog(self):
         """インストールダイアログを表示"""
@@ -231,7 +236,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
             success, message = self.installer.install_from_github(url)
             
             if success:
-                status_label.configure(text=message, text_color="green")
+                status_label.configure(text=f"{message}\n\n2秒後にウィンドウを閉じます...", text_color="green")
                 dialog.after(2000, lambda: [dialog.destroy(), self._reload_plugins()])
             else:
                 status_label.configure(text=message, text_color="red")
@@ -553,13 +558,17 @@ class PluginManagerWindow(ctk.CTkToplevel):
     
     def _reload_plugins(self):
         """プラグインリストを再読み込み"""
+        # プラグインを再検出
+        self.plugin_manager.discover_plugins()
+        
         # ウィンドウを閉じて再度開く
         self.destroy()
-        PluginManagerWindow(
+        new_window = PluginManagerWindow(
             self.master,
             self.plugin_manager,
             self.on_plugin_changed,
         )
+        new_window.focus()
     
     def _on_closing(self):
         """ウィンドウを閉じる"""
