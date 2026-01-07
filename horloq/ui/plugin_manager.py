@@ -366,25 +366,40 @@ class PluginManagerWindow(ctk.CTkToplevel):
             
             name = plugin.get("name", "不明")
             desc = plugin.get("description", "説明なし")
+            version = plugin.get("version", "")
+            
+            # インストール済みかチェック
+            is_installed = self.installer.get_plugin_info(name) is not None
+            
+            # タイトル（インストール済みの場合はバッジを追加）
+            title_text = f"{name}"
+            if is_installed:
+                title_text += " ✓"
             
             name_label = ctk.CTkLabel(
                 info_frame,
-                text=name,
+                text=title_text,
                 font=("Arial", 14, "bold"),
                 anchor="w",
+                text_color="#4caf50" if is_installed else "white",
             )
             name_label.pack(anchor="w")
             
+            # 説明（バージョン情報を追加）
+            desc_text = desc
+            if version:
+                desc_text += f" (v{version})"
+            
             desc_label = ctk.CTkLabel(
                 info_frame,
-                text=desc,
+                text=desc_text,
                 font=("Arial", 11),
                 text_color="gray70",
                 anchor="w",
             )
             desc_label.pack(anchor="w")
             
-            # インストールボタン
+            # インストール/更新ボタン
             def install_from_catalog():
                 repo = plugin.get("repository")
                 path = plugin.get("path", name)
@@ -398,18 +413,32 @@ class PluginManagerWindow(ctk.CTkToplevel):
                 if success:
                     status_label.configure(text=message, text_color="green")
                     # インストールボタンを無効化
-                    install_btn.configure(state="disabled", text="インストール済み")
+                    install_btn.configure(state="disabled", text="✓ インストール済み", fg_color="gray")
+                    name_label.configure(text=f"{name} ✓", text_color="#4caf50")
                 else:
                     status_label.configure(text=message, text_color="red")
             
-            install_btn = ctk.CTkButton(
-                card,
-                text="インストール",
-                command=install_from_catalog,
-                fg_color="#007acc",
-                hover_color="#0098ff",
-                width=100,
-            )
+            # ボタンの状態を設定
+            if is_installed:
+                install_btn = ctk.CTkButton(
+                    card,
+                    text="✓ インストール済み",
+                    command=None,
+                    state="disabled",
+                    fg_color="gray",
+                    width=120,
+                    height=32,
+                )
+            else:
+                install_btn = ctk.CTkButton(
+                    card,
+                    text="インストール",
+                    command=install_from_catalog,
+                    fg_color="#007acc",
+                    hover_color="#0098ff",
+                    width=120,
+                    height=32,
+                )
             install_btn.pack(side="right", padx=15)
         
         # 閉じるボタン
