@@ -158,10 +158,27 @@ class HorloqApp:
             ]
             self.context_menu.show(event, menu_items)
         
-        # 右クリックイベントをバインド
-        self.window.bind("<Button-3>", show_context_menu)
+        # 全てのウィジェットに右クリックイベントをバインド
+        widgets_to_bind = [self.window]
+        
+        # 時計ウィジェットとその子ウィジェットにもバインド
         if self.clock_widget:
-            self.clock_widget.bind("<Button-3>", show_context_menu)
+            widgets_to_bind.append(self.clock_widget)
+            # CustomTkinterウィジェットの内部フレームも取得
+            for child in self.clock_widget.winfo_children():
+                widgets_to_bind.append(child)
+        
+        # 各ウィジェットにイベントをバインド
+        for widget in widgets_to_bind:
+            # Windows, Linux用
+            widget.bind("<Button-3>", show_context_menu)
+            # macOS用（Control+クリック）
+            widget.bind("<Control-Button-1>", show_context_menu)
+            # 一部環境用（Button-2を右クリックとして扱う場合）
+            try:
+                widget.bind("<Button-2>", show_context_menu)
+            except:
+                pass
     
     def _on_plugin_manager(self):
         """プラグイン管理を開く"""

@@ -26,11 +26,25 @@
 
 #### 方法1: バイナリダウンロード（推奨）
 
-[GitHub Releases](https://github.com/Nyayuta1060/Horloq/releases) から最新版をダウンロード：
+最新のバイナリファイルを [Releases](https://github.com/Nyayuta1060/Horloq/releases/latest) からダウンロードできます。
 
-- Windows: `Horloq-windows.exe`
-- macOS: `Horloq-macos`
-- Linux: `Horloq-linux`
+**Linux:**
+```bash
+wget https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-linux-x86_64
+chmod +x horloq-linux-x86_64
+./horloq-linux-x86_64
+```
+
+**Windows:**
+1. [horloq-windows-x86_64.exe](https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-windows-x86_64.exe) をダウンロード
+2. ダブルクリックして実行
+
+**macOS:**
+```bash
+curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-macos-x86_64
+chmod +x horloq
+./horloq
+```
 
 #### 方法2: ソースからビルド
 
