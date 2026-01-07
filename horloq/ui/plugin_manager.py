@@ -477,12 +477,20 @@ class PluginManagerWindow(ctk.CTkToplevel):
         )
         name_label.pack(anchor="w")
         
-        # プラグインの詳細情報を取得
-        plugin = self.plugin_manager.get_plugin(plugin_name)
-        if plugin:
-            desc_text = f"{plugin.description} (v{plugin.version} by {plugin.author})"
+        # プラグインの詳細情報を取得（plugin.yamlから直接読み込む）
+        plugin_info = self.installer.get_plugin_info(plugin_name)
+        if plugin_info:
+            description = plugin_info.get("description", "説明なし")
+            version = plugin_info.get("version", "不明")
+            author = plugin_info.get("author", "不明")
+            desc_text = f"{description} (v{version} by {author})"
         else:
-            desc_text = "プラグインの説明がありません"
+            # アクティブなプラグインから取得を試みる（フォールバック）
+            plugin = self.plugin_manager.get_plugin(plugin_name)
+            if plugin:
+                desc_text = f"{plugin.description} (v{plugin.version} by {plugin.author})"
+            else:
+                desc_text = "プラグインの説明がありません"
         
         desc_label = ctk.CTkLabel(
             info_frame,
@@ -494,7 +502,6 @@ class PluginManagerWindow(ctk.CTkToplevel):
         desc_label.pack(anchor="w")
         
         # アンインストールボタンを表示（すべてのプラグインで表示）
-        plugin_info = self.installer.get_plugin_info(plugin_name)
         if plugin_info:
             uninstall_btn = ctk.CTkButton(
                 item_frame,
