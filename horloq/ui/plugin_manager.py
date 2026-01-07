@@ -80,25 +80,47 @@ class PluginManagerWindow(ctk.CTkToplevel):
             text="新しいプラグインをインストール:",
             font=("Arial", 12, "bold"),
         )
-        install_label.pack(side="left", padx=10)
+        install_label.pack(anchor="w", padx=10, pady=(10, 5))
         
-        install_btn = ctk.CTkButton(
-            install_frame,
-            text="GitHubからインストール",
-            command=self._show_install_dialog,
-            fg_color="#007acc",
-            hover_color="#0098ff",
+        # ボタンコンテナ
+        button_container = ctk.CTkFrame(install_frame, fg_color="transparent")
+        button_container.pack(fill="x", padx=10, pady=(5, 10))
+        
+        # 公式プラグイン
+        official_btn = ctk.CTkButton(
+            button_container,
+            text="🏆 公式プラグイン",
+            command=self._show_official_plugins,
+            fg_color="#6f42c1",
+            hover_color="#5a32a3",
+            width=150,
+            height=35,
         )
-        install_btn.pack(side="right", padx=5)
+        official_btn.pack(side="left", padx=5)
         
+        # カタログから選択
         browse_btn = ctk.CTkButton(
-            install_frame,
-            text="カタログから選択",
+            button_container,
+            text="📦 カタログから選択",
             command=self._show_catalog_dialog,
             fg_color="#28a745",
             hover_color="#218838",
+            width=150,
+            height=35,
         )
-        browse_btn.pack(side="right", padx=5)
+        browse_btn.pack(side="left", padx=5)
+        
+        # GitHubから直接
+        install_btn = ctk.CTkButton(
+            button_container,
+            text="🔗 GitHubから直接",
+            command=self._show_install_dialog,
+            fg_color="#007acc",
+            hover_color="#0098ff",
+            width=150,
+            height=35,
+        )
+        install_btn.pack(side="left", padx=5)
         
         # プラグインリスト
         list_frame = ctk.CTkScrollableFrame(self, height=300)
@@ -230,8 +252,17 @@ class PluginManagerWindow(ctk.CTkToplevel):
         )
         cancel_btn.pack(side="right", padx=5)
     
+    def _show_official_plugins(self):
+        """公式プラグインダイアログを表示"""
+        # 公式リポジトリを自動読み込み
+        self._show_catalog_dialog_internal("Nyayuta1060/Horloq-Plugins", "公式プラグイン")
+    
     def _show_catalog_dialog(self):
         """カタログダイアログを表示"""
+        self._show_catalog_dialog_internal(None, "プラグインカタログから選択")
+    
+    def _show_catalog_dialog_internal(self, default_repo: Optional[str], title_text: str):
+        """カタログダイアログを表示（内部実装）"""
         dialog = ctk.CTkToplevel(self)
         dialog.title("プラグインカタログ")
         dialog.geometry("600x500")
@@ -242,37 +273,42 @@ class PluginManagerWindow(ctk.CTkToplevel):
         # タイトル
         title = ctk.CTkLabel(
             dialog,
-            text="プラグインカタログから選択",
+            text=title_text,
             font=("Arial", 16, "bold"),
         )
         title.pack(pady=20)
         
-        # リポジトリ入力
+        # リポジトリ入力（公式プラグインの場合は非表示）
         repo_frame = ctk.CTkFrame(dialog)
-        repo_frame.pack(pady=10, padx=20, fill="x")
-        
-        repo_label = ctk.CTkLabel(repo_frame, text="リポジトリ:", font=("Arial", 12))
-        repo_label.pack(side="left", padx=10)
-        
-        repo_entry = ctk.CTkEntry(
-            repo_frame,
-            placeholder_text="例: username/horloq-plugins",
-            width=300,
-        )
-        repo_entry.pack(side="left", fill="x", expand=True, padx=10)
-        
-        load_btn = ctk.CTkButton(
-            repo_frame,
-            text="読み込み",
-            command=lambda: load_catalog(),
-            width=80,
-        )
-        load_btn.pack(side="right", padx=10)
+        if default_repo:
+            # 公式プラグインの場合は入力欄を非表示
+            pass
+        else:
+            repo_frame.pack(pady=10, padx=20, fill="x")
+            
+            repo_label = ctk.CTkLabel(repo_frame, text="リポジトリ:", font=("Arial", 12))
+            repo_label.pack(side="left", padx=10)
+            
+            repo_entry = ctk.CTkEntry(
+                repo_frame,
+                placeholder_text="例: username/horloq-plugins",
+                width=300,
+            )
+            repo_entry.pack(side="left", fill="x", expand=True, padx=10)
+            
+            load_btn = ctk.CTkButton(
+                repo_frame,
+                text="読み込み",
+                command=lambda: load_catalog(),
+                width=80,
+            )
+            load_btn.pack(side="right", padx=10)
         
         # ステータスラベル
+        initial_status = "カタログを読み込んでいます..." if default_repo else "リポジトリURLを入力してカタログを読み込んでください"
         status_label = ctk.CTkLabel(
             dialog,
-            text="リポジトリURLを入力してカタログを読み込んでください",
+            text=initial_status,
             font=("Arial", 11),
         )
         status_label.pack(pady=5)
@@ -281,8 +317,13 @@ class PluginManagerWindow(ctk.CTkToplevel):
         list_frame = ctk.CTkScrollableFrame(dialog, height=250)
         list_frame.pack(pady=10, padx=20, fill="both", expand=True)
         
-        def load_catalog():
-            repo_url = repo_entry.get().strip()
+        def load_catalog(repo_url=None):
+            if repo_url is None:
+                if default_repo:
+                    repo_url = default_repo
+                else:
+                    repo_url = repo_entry.get().strip()
+            
             if not repo_url:
                 status_label.configure(text="リポジトリURLを入力してください", text_color="red")
                 return
@@ -305,6 +346,10 @@ class PluginManagerWindow(ctk.CTkToplevel):
             # プラグインカードを表示
             for plugin in plugins:
                 create_plugin_card(list_frame, plugin)
+        
+        # 公式プラグインの場合は自動的に読み込む
+        if default_repo:
+            dialog.after(100, lambda: load_catalog(default_repo))
         
         def create_plugin_card(parent, plugin):
             card = ctk.CTkFrame(parent)
