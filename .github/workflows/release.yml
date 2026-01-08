@@ -112,5 +112,3 @@ jobs:
             - 初回リリース
           draft: false
           prerelease: false
-          asset_name: horloq-macos-x86_64
-          asset_content_type: application/octet-stream
