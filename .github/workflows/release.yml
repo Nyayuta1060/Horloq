@@ -89,26 +89,7 @@ jobs:
           body: |
             ## Horloq ${{ github.ref_name }}
 
-            ### インストール方法
-
-            #### Linux
-            ```bash
-            chmod +x horloq-linux-x86_64
-            ./horloq-linux-x86_64
-            ```
-
-            #### Windows
-            ```cmd
-            horloq-windows-x86_64.exe
-            ```
-
-            #### macOS
-            ```bash
-            chmod +x horloq-macos-x86_64
-            ./horloq-macos-x86_64
-            ```
-
             ### 変更点
-            - 初回リリース
+            - リリースノートをここに記載してください。
           draft: false
           prerelease: false
