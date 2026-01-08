@@ -3,6 +3,7 @@
 """
 
 import os
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -99,17 +100,17 @@ class PluginInstaller:
                 
                 # 依存関係をインストール
                 requirements_path = install_path / "requirements.txt"
+                dep_message = ""
                 if requirements_path.exists():
-                    result = subprocess.run(
-                        ["pip", "install", "-r", str(requirements_path)],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if result.returncode != 0:
-                        return False, f"依存関係のインストールに失敗: {result.stderr}"
+                    success, message = self._install_dependencies(requirements_path)
+                    if not success:
+                        # 依存関係のインストールに失敗してもプラグイン自体はインストール
+                        dep_message = f"\n警告: {message}"
+                    else:
+                        dep_message = f"\n{message}"
                 
                 version = metadata.get("version", "不明")
-                return True, f"プラグイン '{plugin_name}' (v{version}) をインストールしました"
+                return True, f"プラグイン '{plugin_name}' (v{version}) をインストールしました{dep_message}"
         
         except Exception as e:
             return False, f"エラー: {str(e)}"
@@ -149,17 +150,17 @@ class PluginInstaller:
             
             # 依存関係をインストール
             requirements_path = install_path / "requirements.txt"
+            dep_message = ""
             if requirements_path.exists():
-                result = subprocess.run(
-                    ["pip", "install", "-r", str(requirements_path)],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode != 0:
-                    return False, f"依存関係のインストールに失敗: {result.stderr}"
+                success, message = self._install_dependencies(requirements_path)
+                if not success:
+                    # 依存関係のインストールに失敗してもプラグイン自体はインストール
+                    dep_message = f"\n警告: {message}"
+                else:
+                    dep_message = f"\n{message}"
             
             version = metadata.get("version", "不明")
-            return True, f"プラグイン '{plugin_name}' (v{version}) をインストールしました"
+            return True, f"プラグイン '{plugin_name}' (v{version}) をインストールしました{dep_message}"
         
         except Exception as e:
             return False, f"エラー: {str(e)}"
@@ -275,3 +276,50 @@ class PluginInstaller:
         
         except Exception as e:
             return False, None
+    
+    def _install_dependencies(self, requirements_path: Path) -> tuple[bool, str]:
+        """
+        依存関係をインストール
+        
+        Args:
+            requirements_path: requirements.txtのパス
+        
+        Returns:
+            (成功フラグ, メッセージ)
+        """
+        try:
+            # sys.executableを使用してバイナリ環境でも動作するようにする
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)],
+                capture_output=True,
+                text=True,
+                timeout=120,  # 2分でタイムアウト
+            )
+            
+            if result.returncode != 0:
+                # エラーメッセージを整形
+                error_msg = result.stderr.strip() if result.stderr else "不明なエラー"
+                return False, f"依存関係のインストールに失敗しました。\n手動でインストールしてください: pip install -r {requirements_path.name}\n詳細: {error_msg}"
+            
+            # インストール成功時、インストールされたパッケージを抽出
+            installed_packages = []
+            with open(requirements_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        # パッケージ名のみを抽出（バージョン指定を除去）
+                        pkg = line.split('>=')[0].split('==')[0].split('<')[0].split('>')[0].strip()
+                        if pkg:
+                            installed_packages.append(pkg)
+            
+            if installed_packages:
+                pkg_list = ', '.join(installed_packages)
+                return True, f"依存関係をインストールしました: {pkg_list}"
+            else:
+                return True, "依存関係をインストールしました"
+        
+        except subprocess.TimeoutExpired:
+            return False, "依存関係のインストールがタイムアウトしました。\nネットワーク接続を確認してください。"
+        except Exception as e:
+            return False, f"依存関係のインストール中にエラーが発生しました: {str(e)}"
+
