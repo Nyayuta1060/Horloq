@@ -73,14 +73,19 @@ jobs:
       - name: Display structure
         run: ls -R artifacts
 
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          cp artifacts/horloq-linux/horloq release/horloq-linux-x86_64
+          cp artifacts/horloq-windows.exe/horloq.exe release/horloq-windows-x86_64.exe
+          cp artifacts/horloq-macos/horloq release/horloq-macos-x86_64
+          chmod +x release/horloq-linux-x86_64
+          chmod +x release/horloq-macos-x86_64
+
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          files: release/*
           body: |
             ## Horloq ${{ github.ref_name }}
 
@@ -104,36 +109,8 @@ jobs:
             ```
 
             ### 変更点
-            - リリースノートをここに記載
+            - 初回リリース
           draft: false
           prerelease: false
-
-      - name: Upload Linux Binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/horloq-linux/horloq
-          asset_name: horloq-linux-x86_64
-          asset_content_type: application/octet-stream
-
-      - name: Upload Windows Binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/horloq-windows.exe/horloq.exe
-          asset_name: horloq-windows-x86_64.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload macOS Binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/horloq-macos/horloq
           asset_name: horloq-macos-x86_64
           asset_content_type: application/octet-stream
