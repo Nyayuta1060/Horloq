@@ -5,6 +5,12 @@ set -e
 
 echo "🔨 Horloqをビルド中..."
 
+# venv環境をアクティベート
+if [ -d "venv" ]; then
+    source venv/bin/activate
+    echo "✓ venv環境をアクティベート"
+fi
+
 # PyInstallerがインストールされているか確認
 if ! command -v pyinstaller &> /dev/null; then
     echo "PyInstallerをインストール中..."

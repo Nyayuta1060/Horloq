@@ -41,16 +41,12 @@ jobs:
       - name: Build with PyInstaller (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          pyinstaller --onefile \
-            --name horloq \
-            --add-data "horloq:horloq" \
-            --hidden-import=PIL._tkinter_finder \
-            horloq/__main__.py
+          pyinstaller build.spec
 
       - name: Build with PyInstaller (Windows)
         if: runner.os == 'Windows'
         run: |
-          pyinstaller --onefile --name horloq --add-data "horloq;horloq" --hidden-import=PIL._tkinter_finder horloq/__main__.py
+          pyinstaller build.spec
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

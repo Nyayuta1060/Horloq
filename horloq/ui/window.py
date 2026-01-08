@@ -4,6 +4,8 @@
 
 import customtkinter as ctk
 from typing import Optional
+import os
+import sys
 from ..core.config import ConfigManager
 from ..core.events import EventManager
 from ..core.theme import ThemeManager
@@ -65,6 +67,9 @@ class MainWindow(ctk.CTk):
         opacity = self.config.get("window.opacity", 1.0)
         self.attributes("-alpha", opacity)
         
+        # アイコンを設定
+        self._set_window_icon()
+        
         # ウィンドウを閉じるときのイベント
         self.protocol("WM_DELETE_WINDOW", self._on_close)
     
@@ -81,6 +86,37 @@ class MainWindow(ctk.CTk):
         y = (screen_height - height) // 2
         
         self.geometry(f"+{x}+{y}")
+    
+    def _set_window_icon(self):
+        """ウィンドウアイコンを設定"""
+        try:
+            # アイコンファイルのパスを探す
+            if getattr(sys, 'frozen', False):
+                # PyInstallerでビルドされた場合
+                base_path = sys._MEIPASS
+            else:
+                # 開発環境の場合
+                base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
+            # プラットフォームに応じたアイコンファイルを使用
+            if sys.platform == 'win32':
+                icon_path = os.path.join(base_path, 'icon.ico')
+                if os.path.exists(icon_path):
+                    self.iconbitmap(icon_path)
+            else:
+                # Linux/macOSではiconphoto()を使用
+                icon_path = os.path.join(base_path, 'icon.png')
+                if os.path.exists(icon_path):
+                    from PIL import Image, ImageTk
+                    image = Image.open(icon_path)
+                    photo = ImageTk.PhotoImage(image)
+                    self.iconphoto(True, photo)
+                    # 参照を保持（ガベージコレクション防止）
+                    self._icon_photo = photo
+        except Exception as e:
+            # アイコン設定に失敗しても続行
+            pass
+
     
     def _apply_theme(self):
         """テーマを適用"""

@@ -29,7 +29,11 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-*.spec
+# Keep build.spec for our project
+# *.spec
+
+# Icon generation artifacts
+icon.iconset/
 
 # Installer logs
 pip-log.txt

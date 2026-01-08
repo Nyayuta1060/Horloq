@@ -134,18 +134,23 @@ class HorloqApp:
         # 日付の表示
         show_date = self.config.get("clock.show_date", True)
         self.clock_widget.show_date = show_date
-        if show_date and not hasattr(self.clock_widget, 'date_label'):
-            # 日付ラベルが存在しない場合は再作成
-            self.clock_widget.date_label = ctk.CTkLabel(
-                self.clock_widget,
-                text="",
-                font=("Arial", self.clock_widget.font_size // 3),
-            )
+        
+        if show_date:
+            # 日付を表示する
+            if not hasattr(self.clock_widget, 'date_label'):
+                # 日付ラベルが存在しない場合は新規作成
+                self.clock_widget.date_label = ctk.CTkLabel(
+                    self.clock_widget,
+                    text="",
+                    font=("Arial", self.clock_widget.font_size // 3),
+                )
+                self.clock_widget.apply_theme(self.themes.current_theme)
+            # 日付ラベルを表示（再表示の場合も対応）
             self.clock_widget.date_label.pack()
-            self.clock_widget.apply_theme(self.themes.current_theme)
-        elif not show_date and hasattr(self.clock_widget, 'date_label'):
-            # 日付ラベルを非表示
-            self.clock_widget.date_label.pack_forget()
+        else:
+            # 日付を非表示にする
+            if hasattr(self.clock_widget, 'date_label'):
+                self.clock_widget.date_label.pack_forget()
         
         # 日付フォーマット
         self.clock_widget.date_format = self.config.get("clock.date_format", "%Y/%m/%d")
