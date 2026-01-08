@@ -117,14 +117,48 @@ class HorloqApp:
     
     def _update_clock_settings(self):
         """時計設定を更新"""
-        if self.clock_widget:
-            # タイムゾーン
-            timezone = self.config.get("clock.timezone", "Asia/Tokyo")
-            self.clock_widget.set_timezone(timezone)
-            
-            # フォーマット
-            format_24h = self.config.get("clock.format", "24h") == "24h"
-            self.clock_widget.set_format(format_24h)
+        if not self.clock_widget:
+            return
+        
+        # タイムゾーン
+        timezone = self.config.get("clock.timezone", "Asia/Tokyo")
+        self.clock_widget.set_timezone(timezone)
+        
+        # フォーマット
+        format_24h = self.config.get("clock.format", "24h") == "24h"
+        self.clock_widget.set_format(format_24h)
+        
+        # 秒の表示
+        self.clock_widget.show_seconds = self.config.get("clock.show_seconds", True)
+        
+        # 日付の表示
+        show_date = self.config.get("clock.show_date", True)
+        self.clock_widget.show_date = show_date
+        if show_date and not hasattr(self.clock_widget, 'date_label'):
+            # 日付ラベルが存在しない場合は再作成
+            self.clock_widget.date_label = ctk.CTkLabel(
+                self.clock_widget,
+                text="",
+                font=("Arial", self.clock_widget.font_size // 3),
+            )
+            self.clock_widget.date_label.pack()
+            self.clock_widget.apply_theme(self.themes.current_theme)
+        elif not show_date and hasattr(self.clock_widget, 'date_label'):
+            # 日付ラベルを非表示
+            self.clock_widget.date_label.pack_forget()
+        
+        # 日付フォーマット
+        self.clock_widget.date_format = self.config.get("clock.date_format", "%Y/%m/%d")
+        
+        # フォントサイズ
+        font_size = self.config.get("clock.font_size", 48)
+        self.clock_widget.font_size = font_size
+        self.clock_widget.time_label.configure(font=("Arial", font_size, "bold"))
+        if hasattr(self.clock_widget, 'date_label'):
+            self.clock_widget.date_label.configure(font=("Arial", font_size // 3))
+        
+        # 即座に表示を更新
+        self.clock_widget._update_time()
     
     def _apply_theme_to_menubar(self):
         """メニューバーにテーマを適用"""

@@ -227,23 +227,33 @@ class SettingsWindow(ctk.CTkToplevel):
         opacity_label = ctk.CTkLabel(opacity_frame, text="不透明度:")
         opacity_label.pack(side="left", padx=5)
         
-        self.opacity_var = ctk.DoubleVar(
-            value=self.config.get("window.opacity", 1.0)
+        # 0-100%の整数値で管理
+        current_opacity = self.config.get("window.opacity", 1.0)
+        self.opacity_var = ctk.IntVar(
+            value=int(current_opacity * 100)
         )
         opacity_slider = ctk.CTkSlider(
             opacity_frame,
-            from_=0.3,
-            to=1.0,
+            from_=30,
+            to=100,
             variable=self.opacity_var,
+            number_of_steps=70,
         )
         opacity_slider.pack(side="left", fill="x", expand=True, padx=5)
         
+        # パーセント表示用のラベル
+        self.opacity_display_var = ctk.StringVar(value=f"{self.opacity_var.get()}%")
         opacity_value_label = ctk.CTkLabel(
             opacity_frame,
-            textvariable=self.opacity_var,
-            width=40,
+            textvariable=self.opacity_display_var,
+            width=50,
         )
         opacity_value_label.pack(side="left", padx=5)
+        
+        # スライダー変更時に表示を更新
+        def update_opacity_display(*args):
+            self.opacity_display_var.set(f"{self.opacity_var.get()}%")
+        self.opacity_var.trace_add("write", update_opacity_display)
     
     def _on_theme_change(self, theme_name: str):
         """テーマ変更イベント処理"""
@@ -319,7 +329,8 @@ class SettingsWindow(ctk.CTkToplevel):
         
         # ウィンドウ設定
         self.config.set("window.always_on_top", self.always_on_top_var.get())
-        self.config.set("window.opacity", self.opacity_var.get())
+        # 不透明度を0-1の範囲に変換（整数パーセント → 小数点）
+        self.config.set("window.opacity", self.opacity_var.get() / 100.0)
         
         # 設定を保存
         self.config.save()
