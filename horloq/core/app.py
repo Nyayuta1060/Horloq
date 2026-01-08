@@ -51,6 +51,14 @@ class HorloqApp:
         self.clock_widget: Optional[DigitalClock] = None
         self.context_menu: Optional[ContextMenu] = None
         
+        # メニューバー要素（テーマ適用用）
+        self.menubar: Optional[ctk.CTkFrame] = None
+        self.app_label: Optional[ctk.CTkLabel] = None
+        self.settings_btn: Optional[ctk.CTkButton] = None
+        self.plugin_btn: Optional[ctk.CTkButton] = None
+        self.separator: Optional[ctk.CTkFrame] = None
+        self.quit_btn: Optional[ctk.CTkButton] = None
+        
         # イベントリスナーを登録
         self._setup_event_listeners()
     
@@ -98,8 +106,14 @@ class HorloqApp:
     
     def _on_theme_changed(self, event):
         """テーマ変更時の処理"""
-        # 時計ウィジェットの再作成が必要な場合
-        pass
+        theme = self.themes.current_theme
+        
+        # 時計ウィジェットにテーマを適用
+        if self.clock_widget:
+            self.clock_widget.apply_theme(theme)
+        
+        # メニューバーにテーマを適用
+        self._apply_theme_to_menubar()
     
     def _update_clock_settings(self):
         """時計設定を更新"""
@@ -112,14 +126,124 @@ class HorloqApp:
             format_24h = self.config.get("clock.format", "24h") == "24h"
             self.clock_widget.set_format(format_24h)
     
+    def _apply_theme_to_menubar(self):
+        """メニューバーにテーマを適用"""
+        if not self.menubar:
+            return
+        
+        theme = self.themes.current_theme
+        
+        # メニューバーの背景色
+        self.menubar.configure(fg_color=theme.bg_secondary or theme.bg)
+        
+        # アプリラベルの色
+        if self.app_label:
+            self.app_label.configure(text_color=theme.accent)
+        
+        # 設定ボタン
+        if self.settings_btn:
+            self.settings_btn.configure(
+                hover_color=theme.bg,
+                text_color=theme.fg,
+            )
+        
+        # プラグインボタン
+        if self.plugin_btn:
+            self.plugin_btn.configure(
+                hover_color=theme.bg,
+                text_color=theme.fg,
+            )
+        
+        # セパレータ
+        if self.separator:
+            self.separator.configure(fg_color=theme.border or "#3e3e42")
+    
     def _create_ui(self):
         """UIを作成"""
         # メインウィンドウを作成
         self.window = MainWindow(self.config, self.events, self.themes)
         
+        # メニューバー（上部ボタン群）
+        theme = self.themes.current_theme
+        self.menubar = ctk.CTkFrame(
+            self.window, 
+            height=45,
+            fg_color=theme.bg_secondary or theme.bg,
+            corner_radius=8,
+        )
+        self.menubar.pack(fill="x", padx=8, pady=(8, 5))
+        
+        # 左側：アプリ名
+        self.app_label = ctk.CTkLabel(
+            self.menubar,
+            text="🕰️ Horloq",
+            font=("Arial", 16, "bold"),
+            text_color=theme.accent,
+        )
+        self.app_label.pack(side="left", padx=15, pady=8)
+        
+        # 右側：ボタン群
+        button_frame = ctk.CTkFrame(self.menubar, fg_color="transparent")
+        button_frame.pack(side="right", padx=10, pady=6)
+        
+        # ボタンの共通スタイル
+        button_style = {
+            "height": 32,
+            "corner_radius": 6,
+            "font": ("Arial", 12),
+            "border_width": 0,
+        }
+        
+        # 設定ボタン
+        self.settings_btn = ctk.CTkButton(
+            button_frame,
+            text="⚙️",
+            command=self._on_open_settings,
+            width=40,
+            fg_color="transparent",
+            hover_color=theme.bg,
+            text_color=theme.fg,
+            **button_style
+        )
+        self.settings_btn.pack(side="left", padx=3)
+        
+        # プラグインボタン
+        self.plugin_btn = ctk.CTkButton(
+            button_frame,
+            text="🔌",
+            command=self._on_plugin_manager,
+            width=40,
+            fg_color="transparent",
+            hover_color=theme.bg,
+            text_color=theme.fg,
+            **button_style
+        )
+        self.plugin_btn.pack(side="left", padx=3)
+        
+        # セパレータ
+        self.separator = ctk.CTkFrame(
+            button_frame,
+            width=1,
+            height=24,
+            fg_color=theme.border or "#3e3e42",
+        )
+        self.separator.pack(side="left", padx=8, pady=4)
+        
+        # 終了ボタン
+        self.quit_btn = ctk.CTkButton(
+            button_frame,
+            text="✕",
+            command=self._on_quit,
+            width=40,
+            fg_color="#dc3545",
+            hover_color="#c82333",
+            **button_style
+        )
+        self.quit_btn.pack(side="left", padx=3)
+        
         # コンテナフレーム
-        container = ctk.CTkFrame(self.window)
-        container.pack(fill="both", expand=True, padx=10, pady=10)
+        container = ctk.CTkFrame(self.window, fg_color="transparent")
+        container.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         
         # 時計ウィジェット
         self.clock_widget = DigitalClock(
@@ -133,52 +257,18 @@ class HorloqApp:
             fg_color="transparent",
         )
         self.clock_widget.pack(fill="both", expand=True)
+        # 初期テーマを適用
+        self.clock_widget.apply_theme(theme)
         
         # プラグインウィジェット用のコンテナ
         self.plugin_container = ctk.CTkFrame(container, fg_color="transparent")
         self.plugin_container.pack(fill="both", expand=False, pady=(10, 0))
-        
-        # コンテキストメニューをセットアップ
-        self._setup_context_menu()
     
-    def _setup_context_menu(self):
-        """コンテキストメニューをセットアップ"""
-        if not self.window:
-            return
-        
-        self.context_menu = ContextMenu(self.window)
-        
-        def show_context_menu(event):
-            menu_items = [
-                ("設定", self._on_open_settings),
-                ("---", None),
-                ("プラグイン管理", self._on_plugin_manager),
-                ("---", None),
-                ("終了", self._on_quit),
-            ]
-            self.context_menu.show(event, menu_items)
-        
-        # 全てのウィジェットに右クリックイベントをバインド
-        widgets_to_bind = [self.window]
-        
-        # 時計ウィジェットとその子ウィジェットにもバインド
-        if self.clock_widget:
-            widgets_to_bind.append(self.clock_widget)
-            # CustomTkinterウィジェットの内部フレームも取得
-            for child in self.clock_widget.winfo_children():
-                widgets_to_bind.append(child)
-        
-        # 各ウィジェットにイベントをバインド
-        for widget in widgets_to_bind:
-            # Windows, Linux用
-            widget.bind("<Button-3>", show_context_menu)
-            # macOS用（Control+クリック）
-            widget.bind("<Control-Button-1>", show_context_menu)
-            # 一部環境用（Button-2を右クリックとして扱う場合）
-            try:
-                widget.bind("<Button-2>", show_context_menu)
-            except:
-                pass
+    def _show_menu_dropdown(self):
+        """メニュードロップダウンを表示（将来の拡張用）"""
+        # 現在は設定とプラグイン管理が独立したボタンなので、
+        # このメニューはその他の機能用に予約
+        pass
     
     def _on_plugin_manager(self):
         """プラグイン管理を開く"""

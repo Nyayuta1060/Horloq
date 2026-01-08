@@ -10,13 +10,14 @@ import customtkinter as ctk
 class PluginBase(ABC):
     """プラグインの基底クラス"""
     
-    # プラグインメタデータ
-    name: str = "Unknown Plugin"
-    version: str = "0.0.0"
-    author: str = "Unknown"
-    description: str = ""
-    
-    def __init__(self, app_context: Dict[str, Any]):
+    def __init__(
+        self, 
+        app_context: Dict[str, Any],
+        name: str = "Unknown Plugin",
+        version: str = "0.0.0",
+        author: str = "Unknown",
+        description: str = "",
+    ):
         """
         初期化
         
@@ -25,7 +26,16 @@ class PluginBase(ABC):
                 - config: ConfigManager
                 - events: EventManager
                 - themes: ThemeManager
+            name: プラグイン名
+            version: バージョン
+            author: 作者
+            description: 説明
         """
+        self.name = name
+        self.version = version
+        self.author = author
+        self.description = description
+        
         self.app_context = app_context
         self.config = app_context.get("config")
         self.events = app_context.get("events")

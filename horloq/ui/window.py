@@ -46,7 +46,7 @@ class MainWindow(ctk.CTk):
         
         # ウィンドウサイズと位置
         width = self.config.get("window.width", 400)
-        height = self.config.get("window.height", 200)
+        height = self.config.get("window.height", 250)
         x = self.config.get("window.x")
         y = self.config.get("window.y")
         
@@ -86,11 +86,20 @@ class MainWindow(ctk.CTk):
         """テーマを適用"""
         theme = self.themes.current_theme
         
-        # CustomTkinterのテーマモード設定
-        ctk.set_appearance_mode("dark" if "dark" in theme.name.lower() else "light")
+        # CustomTkinterのテーマモード設定（light/darkの判定を改善）
+        is_dark = theme.name.lower() != "light"
+        ctk.set_appearance_mode("dark" if is_dark else "light")
         
-        # 背景色を設定
+        # 背景色とテキスト色を設定
         self.configure(fg_color=theme.bg)
+        
+        # デフォルトカラーをオーバーライド
+        ctk.ThemeManager.theme["CTk"]["fg_color"] = [theme.bg, theme.bg]
+        ctk.ThemeManager.theme["CTkFrame"]["fg_color"] = [theme.bg_secondary or theme.bg, theme.bg_secondary or theme.bg]
+        ctk.ThemeManager.theme["CTkLabel"]["text_color"] = [theme.fg, theme.fg]
+        ctk.ThemeManager.theme["CTkButton"]["fg_color"] = [theme.accent, theme.accent]
+        ctk.ThemeManager.theme["CTkButton"]["hover_color"] = [theme.hover or theme.accent, theme.hover or theme.accent]
+        ctk.ThemeManager.theme["CTkButton"]["text_color"] = [theme.fg, theme.fg]
     
     def _on_theme_changed(self, event):
         """テーマ変更イベント処理"""

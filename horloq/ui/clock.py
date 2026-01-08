@@ -68,6 +68,23 @@ class DigitalClock(ctk.CTkFrame):
             )
             self.date_label.pack()
     
+    def apply_theme(self, theme):
+        """
+        テーマを適用
+        
+        Args:
+            theme: Themeオブジェクト
+        """
+        # 背景色を透明に設定
+        self.configure(fg_color="transparent")
+        
+        # 時刻ラベルの色を設定
+        self.time_label.configure(text_color=theme.fg)
+        
+        # 日付ラベルの色を設定
+        if self.show_date and hasattr(self, 'date_label'):
+            self.date_label.configure(text_color=theme.fg_secondary or theme.fg)
+    
     def _update_time(self):
         """時刻を更新"""
         now = datetime.now(self.timezone)
