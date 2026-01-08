@@ -219,8 +219,5 @@ def _on_theme_changed(self, event):
     print("Theme changed!")
 ```
 
-## サンプルプラグイン
-
-- [horloq-plugin-hello](https://github.com/example/horloq-plugin-hello) - シンプルなHello Worldプラグイン
-- [horloq-plugin-stopwatch](https://github.com/example/horloq-plugin-stopwatch) - ストップウォッチ機能
-- [horloq-plugin-timer](https://github.com/example/horloq-plugin-timer) - タイマー機能
+## 公式プラグイン
+詳細は [公式プラグイン週](https://github.com/Nyayuta1060/Horloq-Plugins)を確認してください
