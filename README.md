@@ -7,6 +7,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build Status](https://github.com/Nyayuta1060/Horloq/workflows/Build%20and%20Release/badge.svg)](https://github.com/Nyayuta1060/Horloq/actions)
+[![Since](https://img.shields.io/badge/since-2025.12-blue)]()
 
 ## 特徴
 
@@ -229,4 +230,3 @@ ls dist/
 ---
 
 Made with ❤️ by Nyayuta1060
-2025 Dec - now
