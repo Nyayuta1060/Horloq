@@ -644,7 +644,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
                 self.plugin_manager.unload_plugin(plugin_name)
             
             # 既存のプラグインをアンインストール
-            success, msg = self.installer.uninstall_plugin(plugin_name)
+            success, msg = self.installer.uninstall(plugin_name)
             if not success:
                 error_dialog = ctk.CTkToplevel(self)
                 error_dialog.title("エラー")
