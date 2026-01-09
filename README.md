@@ -1,26 +1,28 @@
 # Horloq - 拡張可能デスクトップ据え置き時計
 
 > Horloq(オルロック)はPython + CustomTkinterで作られた、プラグインシステムを備えた高機能デスクトップ時計アプリケーションです。
+> 
+![Horloq_icon](icon.png)
 
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build Status](https://github.com/Nyayuta1060/Horloq/workflows/Build%20and%20Release/badge.svg)](https://github.com/Nyayuta1060/Horloq/actions)
 
-## ✨ 特徴
+## 特徴
 
-- 🕐 **デジタル/アナログ時計表示** - 自由に切り替え可能な時計表示
-- 🎨 **カスタマイズ可能なテーマ** - 色、フォント、透明度など自由にカスタマイズ
-- 🔌 **プラグインシステム** - 機能を自由に追加・拡張できる
-- 🌤️ **標準プラグイン搭載** - 天気、カレンダー、タイマーなど
-- 💻 **クロスプラットフォーム** - Windows, macOS, Linux対応
-- 🪶 **軽量** - メモリ使用量100MB以下
-- 🎯 **常に最前面表示** - 作業中も時計を確認できる
+- **デジタル/アナログ時計表示** - 自由に切り替え可能な時計表示
+- **カスタマイズ可能なテーマ** - 色、フォント、透明度など自由にカスタマイズ
+- **プラグインシステム** - 機能を自由に追加・拡張できる
+- **標準プラグイン搭載** - 天気、カレンダー、タイマーなど
+- **クロスプラットフォーム** - Windows, macOS, Linux対応
+- **軽量** - メモリ使用量100MB以下
+- **常に最前面表示** - 作業中も時計を確認できる
 
-## 📸 スクリーンショット
+## スクリーンショット
 
 <!-- TODO: スクリーンショットを追加 -->
 
-## 🚀 クイックスタート
+## クイックスタート
 
 ### インストール
 
@@ -71,54 +73,43 @@ python -m horloq
 
 1. **起動**: アプリケーションを起動すると、デスクトップに時計が表示されます
 2. **右クリックメニュー**: 時計を右クリックして設定やプラグイン管理にアクセス
-   - ⚙️ 設定：時計の表示設定やテーマを変更
-   - 🔌 プラグイン管理：プラグインの有効/無効を切り替え
-   - ❌ 終了：アプリケーションを終了
+   - 設定：時計の表示設定やテーマを変更
+   - プラグイン管理：プラグインの有効/無効を切り替え
+   - 終了：アプリケーションを終了
 3. **設定**: 時計の設定は `~/.config/horloq/config.yaml` で管理されます
 4. **ドラッグで移動**: 時計ウィンドウをドラッグして好きな位置に配置
 
-## 📦 プラグイン
+## プラグイン
 
 Horloqはプラグインシステムにより機能を拡張できます。すべてのプラグインはユーザーが必要に応じてインストールできます。
 
+### プラグイン更新通知
+
+アプリ起動時に自動的にプラグインの更新をチェックし、新しいバージョンが利用可能な場合は通知バナーを表示します。プラグイン管理画面から1クリックで更新できます。
+
 ### 公式プラグイン
 
-| プラグイン             | 説明                                         |
-| ---------------------- | -------------------------------------------- |
-| 👋 **Hello**            | サンプルプラグイン                           |
-| ⏱️ **タイマー**         | カウントダウンタイマー（プリセット機能付き） |
-| ⏲️ **ストップウォッチ** | 精密時間計測（ラップタイム機能付き）         |
+公式プラグインは別リポジトリで管理されています。詳細は [公式プラグイン集](https://github.com/Nyayuta1060/Horloq-Plugins)を参照してください。
 
-公式プラグインは別リポジトリで管理されています。詳細は [公式プラグイン集](https://github.com/Nyayuta1060/horloq-official-plugins)（準備中）を参照してください。
+利用可能なプラグイン:
+- **Timer** - カスタム時間設定とプリセット機能付きタイマー
+- **Stopwatch** - ラップタイム機能付きストップウォッチ
+- **Bongo Cat** - キー入力・マウスクリックに反応するアニメーション（カウンター機能付き）
+- **Pomodoro** - 25-5-15サイクルのポモドーロタイマー
+- **Weather** - OpenWeatherMap APIを使った天気予報表示
 
-### プラグインの管理
+### プラグインのインストール
 
-#### GUIから
+#### GUI（推奨）
+1. Horloqを起動
+2. 右クリックメニューから「プラグイン管理」を選択
+3. 「公式プラグイン」または「カタログから選択」ボタンをクリック
+4. プラグインを選択してインストール
 
-1. 右クリックメニューから「プラグイン管理」を選択
-2. **公式プラグインをインストール:**
-   - 「カタログから選択」をクリック
-   - `Nyayuta1060/horloq-official-plugins`を入力（準備中）
-   - 一覧から必要なプラグインを選択してインストール
-3. **サードパーティプラグインをインストール:**
-   - 「GitHubからインストール」- 単一プラグインをURLから直接インストール
-   - 「カタログから選択」- モノレポのプラグイン一覧から選択してインストール
-
-#### CLIから
-
+#### CLI
 ```bash
-# 公式プラグインをインストール（準備中）
-python -m horloq plugin install Nyayuta1060/horloq-official-plugins:hello
-python -m horloq plugin install Nyayuta1060/horloq-official-plugins:timer
-
-# サードパーティプラグインをインストール
-python -m horloq plugin install username/horloq-plugin-example
-
-# モノレポから特定のプラグインをインストール
-python -m horloq plugin install username/horloq-plugins:weather
-
-# プラグインをアンインストール
-python -m horloq plugin uninstall hello
+# 公式プラグインをインストール
+python -m horloq plugin install Nyayuta1060/Horloq-Plugins:timer
 
 # インストール済みプラグイン一覧
 python -m horloq plugin list
@@ -126,27 +117,49 @@ python -m horloq plugin list
 
 ### プラグイン開発
 
-独自のプラグインを作成・配布できます。詳細は [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) を参照してください。
-公式プラグインのサンプルコードは [サンプルプラグイン集](docs/EXAMPLE_PLUGINS.md) で確認できます。
-#### 簡単な例
+独自のプラグインを作成・配布できます。
 
-1. GitHubでリポジトリ作成（例: `horloq-plugin-myfeature`）
-2. プラグインファイルを作成：
+**重要**: プラグインメタデータは `plugin.yaml` で管理されます。Pythonコード内でのハードコーディングは不要です。
 
+```python
+# __init__.py
+from horloq.plugins.base import PluginBase
+import customtkinter as ctk
+
+class MyPlugin(PluginBase):
+    def __init__(self, app_context):
+        # plugin.yamlから自動的にメタデータを読み込みます
+        super().__init__(app_context)
+    
+    def initialize(self):
+        return True
+    
+    def shutdown(self):
+        pass
+    
+    def create_widget(self, parent):
+        frame = ctk.CTkFrame(parent)
+        label = ctk.CTkLabel(frame, text="Hello from my plugin!")
+        label.pack(pady=10)
+        return frame
+
+# プラグインクラスをエクスポート
+Plugin = MyPlugin
 ```
-horloq-plugin-myfeature/
-├── plugin.yaml       # メタデータ
-├── __init__.py      # プラグイン本体
-└── README.md
+
+```yaml
+# plugin.yaml
+name: my_plugin
+version: 1.0.0
+author: Your Name
+description: My awesome plugin
+min_horloq_version: 0.1.0
 ```
 
-3. ユーザーはこうインストール：
+詳細は [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) を参照してください。
 
-```bash
-python -m horloq plugin install yourusername/horloq-plugin-myfeature
-```
 
-## 🔧 開発
+##  開発
 
 ### 環境構築
 
@@ -168,40 +181,6 @@ pip install -r requirements-dev.txt
 python -m horloq
 ```
 
-### プラグイン開発
-
-独自のプラグインを作成する方法：
-
-```python
-# __init__.py
-from horloq.plugins.base import PluginBase
-import customtkinter as ctk
-
-class MyPlugin(PluginBase):
-    def __init__(self, app_context):
-        super().__init__(
-            name="my_plugin",
-            version="1.0.0",
-            author="Your Name",
-            description="My awesome plugin",
-            app_context=app_context,
-        )
-    
-    def initialize(self):
-        return True
-    
-    def create_widget(self, parent):
-        frame = ctk.CTkFrame(parent)
-        label = ctk.CTkLabel(frame, text="Hello from my plugin!")
-        label.pack(pady=10)
-        return frame
-
-# プラグインクラスをエクスポート
-Plugin = MyPlugin
-```
-
-詳細は [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) を参照してください。
-
 ### ビルド
 
 ```bash
@@ -212,7 +191,7 @@ pyinstaller horloq.spec
 ls dist/
 ```
 
-## 📚 ドキュメント
+## ドキュメント
 
 - [アーキテクチャ設計](docs/ARCHITECTURE.md) - システム全体の設計
 - [機能仕様書](docs/FEATURES.md) - 全機能の詳細仕様
@@ -220,7 +199,7 @@ ls dist/
 - [Python実装詳細](docs/PYTHON_IMPLEMENTATION.md) - コード実装の詳細
 - [開発ガイド](docs/DEVELOPMENT.md) - 開発環境とコーディング規約
 
-## 🤝 コントリビューション
+## コントリビューション
 
 コントリビューションを歓迎します！以下の手順でお願いします：
 
@@ -232,17 +211,17 @@ ls dist/
 
 詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
 
-## 📄 ライセンス
+## ライセンス
 
 このプロジェクトは MIT ライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
-## 🙏 謝辞
+## 謝辞
 
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) - モダンなTkinter UI
 - [PyInstaller](https://pyinstaller.org/) - Pythonアプリのパッケージング
 - すべてのコントリビューターの皆様
 
-## 📞 お問い合わせ
+## お問い合わせ
 
 - GitHub Issues: [https://github.com/Nyayuta1060/Horloq/issues](https://github.com/Nyayuta1060/Horloq/issues)
 - プロジェクトリンク: [https://github.com/Nyayuta1060/Horloq](https://github.com/Nyayuta1060/Horloq)

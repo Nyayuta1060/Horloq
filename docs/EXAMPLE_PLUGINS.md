@@ -7,7 +7,8 @@
 
 ```
 horloq-official-plugins/
-├── plugins.yaml
+├── plugins.yaml           # 自動生成されるカタログ
+├── generate_catalog.py    # カタログ生成スクリプト
 ├── hello/
 │   ├── plugin.yaml
 │   └── __init__.py
@@ -19,7 +20,9 @@ horloq-official-plugins/
     └── __init__.py
 ```
 
-## plugins.yaml
+## plugins.yaml（自動生成）
+
+**⚠️ 重要**: `plugins.yaml`は手動で編集せず、`generate_catalog.py`で自動生成してください。
 
 ```yaml
 repository: Nyayuta1060/horloq-official-plugins
@@ -68,13 +71,8 @@ class HelloPlugin(PluginBase):
     """シンプルなHello Worldプラグイン"""
     
     def __init__(self, app_context):
-        super().__init__(
-            name="hello",
-            version="1.0.0",
-            author="Nyayuta1060",
-            description="シンプルなHello Worldプラグイン",
-            app_context=app_context,
-        )
+        # plugin.yamlから自動的にメタデータを読み込みます
+        super().__init__(app_context)
     
     def initialize(self) -> bool:
         """初期化"""
@@ -129,13 +127,8 @@ class TimerPlugin(PluginBase):
     """カウントダウンタイマープラグイン"""
     
     def __init__(self, app_context):
-        super().__init__(
-            name="timer",
-            version="1.0.0",
-            author="Nyayuta1060",
-            description="カウントダウンタイマー",
-            app_context=app_context,
-        )
+        # plugin.yamlから自動的にメタデータを読み込みます
+        super().__init__(app_context)
         self.timer_window = None
         self.remaining_time = 0
         self.is_running = False
@@ -319,13 +312,8 @@ class StopwatchPlugin(PluginBase):
     """ストップウォッチプラグイン"""
     
     def __init__(self, app_context):
-        super().__init__(
-            name="stopwatch",
-            version="1.0.0",
-            author="Nyayuta1060",
-            description="ストップウォッチ",
-            app_context=app_context,
-        )
+        # plugin.yamlから自動的にメタデータを読み込みます
+        super().__init__(app_context)
         self.stopwatch_window = None
         self.start_time = 0
         self.elapsed_time = 0

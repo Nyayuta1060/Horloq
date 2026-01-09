@@ -218,7 +218,21 @@ GitHub上でプルリクエストを作成し、以下を記載してくださ�
 
 ## プラグイン開発
 
-プラグインを開発する場合は、以下の構造に従ってください：
+プラグインを開発する場合は、以下のガイドラインに従ってください：
+
+### plugin.yaml の作成
+
+プラグインのメタデータは `plugin.yaml` で管理します：
+
+```yaml
+name: my-plugin
+version: 1.0.0
+author: Your Name
+description: プラグインの説明
+min_horloq_version: 0.1.0
+```
+
+### プラグインクラスの実装
 
 ```python
 from horloq.plugins.base import PluginBase
@@ -227,10 +241,9 @@ import customtkinter as ctk
 class MyPlugin(PluginBase):
     """プラグインの説明"""
     
-    name = "my-plugin"
-    version = "1.0.0"
-    author = "Your Name"
-    description = "プラグインの説明"
+    def __init__(self, app_context):
+        # plugin.yamlから自動的にメタデータを読み込みます
+        super().__init__(app_context)
     
     def initialize(self) -> bool:
         """初期化処理"""
@@ -245,9 +258,21 @@ class MyPlugin(PluginBase):
         frame = ctk.CTkFrame(parent)
         # ウィジェットを追加
         return frame
+
+# プラグインクラスをエクスポート
+Plugin = MyPlugin
 ```
 
-詳細は [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) を参照してください。
+**重要**: 
+- `plugin.yaml` がメタデータの唯一の情報源（Single Source of Truth）
+- `__init__` では `super().__init__(app_context)` のみ呼び出す
+- `name`、`version`、`author`、`description` は自動読み込み
+- Python コード内でのハードコーディングは不要
+
+詳細は以下のドキュメントを参照してください：
+- [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md)
+- [サンプルプラグイン集](docs/EXAMPLE_PLUGINS.md)
+- [開発者ドキュメント](docs/DEVELOPMENT.md)
 
 ## 質問やヘルプ
 
