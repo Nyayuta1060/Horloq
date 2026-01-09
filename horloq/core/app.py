@@ -3,11 +3,12 @@
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from .config import ConfigManager
 from .events import EventManager
 from .theme import ThemeManager
 from ..plugins.manager import PluginManager
+from ..plugins.installer import PluginInstaller
 from ..ui.window import MainWindow
 from ..ui.clock import DigitalClock
 from ..ui.settings import SettingsWindow
@@ -46,6 +47,9 @@ class HorloqApp:
         plugin_dirs = self._get_plugin_dirs()
         self.plugins = PluginManager(self.app_context, plugin_dirs)
         
+        # プラグインインストーラーを初期化
+        self.plugin_installer = PluginInstaller(plugin_dirs[0] if plugin_dirs else None)
+        
         # ウィンドウ
         self.window: Optional[MainWindow] = None
         self.clock_widget: Optional[DigitalClock] = None
@@ -58,6 +62,10 @@ class HorloqApp:
         self.plugin_btn: Optional[ctk.CTkButton] = None
         self.separator: Optional[ctk.CTkFrame] = None
         self.quit_btn: Optional[ctk.CTkButton] = None
+        
+        # 更新通知バナー
+        self.update_banner: Optional[ctk.CTkFrame] = None
+        self.pending_updates: List[Dict[str, Any]] = []
         
         # イベントリスナーを登録
         self._setup_event_listeners()
@@ -413,6 +421,189 @@ class HorloqApp:
         # イベントを発行
         self.events.emit("app_started")
         
+        # プラグインの更新をチェック（非同期）
+        self._check_plugin_updates()
+        
         # メインループを開始
         if self.window:
             self.window.show()
+    
+    def _check_plugin_updates(self):
+        """プラグインの更新をチェック（非同期）"""
+        def check_updates():
+            try:
+                success, updates = self.plugin_installer.check_for_updates()
+                if success and updates:
+                    self.pending_updates = updates
+                    # メインスレッドで更新通知を表示
+                    if self.window:
+                        self.window.after(100, self._show_update_notification)
+            except Exception as e:
+                print(f"更新チェックエラー: {e}")
+        
+        # 別スレッドで実行（ネットワーク処理をブロックしない）
+        import threading
+        thread = threading.Thread(target=check_updates, daemon=True)
+        thread.start()
+    
+    def _show_update_notification(self):
+        """更新通知バナーを表示"""
+        if not self.window or not self.pending_updates:
+            return
+        
+        # 既存のバナーがあれば削除
+        if self.update_banner:
+            self.update_banner.destroy()
+        
+        theme = self.themes.current_theme
+        
+        # 更新通知バナー
+        self.update_banner = ctk.CTkFrame(
+            self.window,
+            fg_color="#2B5A8E",  # 青系の背景
+            corner_radius=8,
+            border_width=2,
+            border_color="#4A90E2",
+        )
+        self.update_banner.pack(fill="x", padx=8, pady=(0, 5))
+        
+        # 左側：アイコンとメッセージ
+        message_frame = ctk.CTkFrame(self.update_banner, fg_color="transparent")
+        message_frame.pack(side="left", fill="x", expand=True, padx=15, pady=10)
+        
+        # アイコンとテキストを横並び
+        icon_label = ctk.CTkLabel(
+            message_frame,
+            text="🔔",
+            font=("Arial", 18),
+        )
+        icon_label.pack(side="left", padx=(0, 10))
+        
+        update_count = len(self.pending_updates)
+        plugin_names = ", ".join([u['name'] for u in self.pending_updates[:3]])
+        if update_count > 3:
+            plugin_names += f" 他{update_count - 3}件"
+        
+        message_label = ctk.CTkLabel(
+            message_frame,
+            text=f"{update_count}個のプラグイン更新があります: {plugin_names}",
+            font=("Arial", 12),
+            text_color="#FFFFFF",
+        )
+        message_label.pack(side="left")
+        
+        # 右側：ボタン群
+        button_frame = ctk.CTkFrame(self.update_banner, fg_color="transparent")
+        button_frame.pack(side="right", padx=15, pady=8)
+        
+        # 詳細表示ボタン
+        detail_btn = ctk.CTkButton(
+            button_frame,
+            text="詳細を見る",
+            command=self._show_update_details,
+            width=100,
+            height=28,
+            fg_color="#4A90E2",
+            hover_color="#357ABD",
+            font=("Arial", 11),
+        )
+        detail_btn.pack(side="left", padx=5)
+        
+        # 閉じるボタン
+        close_btn = ctk.CTkButton(
+            button_frame,
+            text="✕",
+            command=self._dismiss_update_banner,
+            width=30,
+            height=28,
+            fg_color="transparent",
+            hover_color="#1E4A7A",
+            font=("Arial", 14),
+            text_color="#FFFFFF",
+        )
+        close_btn.pack(side="left", padx=5)
+        
+        # ウィンドウサイズを再調整
+        self._adjust_window_size()
+    
+    def _show_update_details(self):
+        """更新詳細をポップアップで表示"""
+        if not self.window or not self.pending_updates:
+            return
+        
+        # ポップアップウィンドウ
+        popup = ctk.CTkToplevel(self.window)
+        popup.title("プラグイン更新")
+        popup.geometry("500x400")
+        popup.attributes("-topmost", True)
+        
+        # ヘッダー
+        header = ctk.CTkLabel(
+            popup,
+            text="🔔 利用可能な更新",
+            font=("Arial", 18, "bold"),
+        )
+        header.pack(pady=15)
+        
+        # スクロール可能なフレーム
+        scroll_frame = ctk.CTkScrollableFrame(popup, width=460, height=250)
+        scroll_frame.pack(padx=20, pady=10, fill="both", expand=True)
+        
+        # 各プラグインの更新情報を表示
+        for update in self.pending_updates:
+            plugin_frame = ctk.CTkFrame(scroll_frame, corner_radius=8)
+            plugin_frame.pack(fill="x", pady=5, padx=5)
+            
+            # プラグイン名とバージョン
+            name_label = ctk.CTkLabel(
+                plugin_frame,
+                text=f"📦 {update['name']}",
+                font=("Arial", 14, "bold"),
+            )
+            name_label.pack(anchor="w", padx=15, pady=(10, 5))
+            
+            version_label = ctk.CTkLabel(
+                plugin_frame,
+                text=f"v{update['current_version']} → v{update['latest_version']}",
+                font=("Arial", 11),
+                text_color="#4A90E2",
+            )
+            version_label.pack(anchor="w", padx=15, pady=(0, 5))
+            
+            desc_label = ctk.CTkLabel(
+                plugin_frame,
+                text=update['description'],
+                font=("Arial", 10),
+                wraplength=400,
+            )
+            desc_label.pack(anchor="w", padx=15, pady=(0, 10))
+        
+        # ボタンフレーム
+        button_frame = ctk.CTkFrame(popup, fg_color="transparent")
+        button_frame.pack(pady=15)
+        
+        # プラグイン管理を開くボタン
+        open_manager_btn = ctk.CTkButton(
+            button_frame,
+            text="プラグイン管理で更新",
+            command=lambda: [popup.destroy(), self._on_plugin_manager()],
+            width=150,
+        )
+        open_manager_btn.pack(side="left", padx=5)
+        
+        # 閉じるボタン
+        close_btn = ctk.CTkButton(
+            button_frame,
+            text="閉じる",
+            command=popup.destroy,
+            width=100,
+            fg_color="gray",
+        )
+        close_btn.pack(side="left", padx=5)
+    
+    def _dismiss_update_banner(self):
+        """更新通知バナーを非表示"""
+        if self.update_banner:
+            self.update_banner.destroy()
+            self.update_banner = None
+            self._adjust_window_size()

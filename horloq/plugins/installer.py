@@ -322,4 +322,93 @@ class PluginInstaller:
             return False, "依存関係のインストールがタイムアウトしました。\nネットワーク接続を確認してください。"
         except Exception as e:
             return False, f"依存関係のインストール中にエラーが発生しました: {str(e)}"
+    
+    def check_for_updates(self, repo_url: str = "Nyayuta1060/Horloq-Plugins") -> tuple[bool, List[Dict[str, Any]]]:
+        """
+        インストール済みプラグインの更新をチェック
+        
+        Args:
+            repo_url: プラグインリポジトリURL
+        
+        Returns:
+            (成功フラグ, 更新可能なプラグインのリスト)
+            各プラグイン情報は以下を含む:
+            - name: プラグイン名
+            - current_version: 現在のバージョン
+            - latest_version: 最新バージョン
+            - description: プラグインの説明
+        """
+        try:
+            # インストール済みプラグイン一覧を取得
+            installed = self.list_installed_plugins()
+            if not installed:
+                return True, []
+            
+            # リモートカタログを取得
+            success, remote_plugins = self.fetch_plugin_catalog(repo_url)
+            if not success or not remote_plugins:
+                return False, []
+            
+            # リモートプラグインを辞書化（高速検索用）
+            remote_dict = {p['name']: p for p in remote_plugins}
+            
+            # 更新可能なプラグインをチェック
+            updates_available = []
+            for local_plugin in installed:
+                plugin_name = local_plugin.get('name')
+                local_version = local_plugin.get('version', '0.0.0')
+                
+                # リモートに同じプラグインがあるかチェック
+                if plugin_name in remote_dict:
+                    remote_version = remote_dict[plugin_name].get('version', '0.0.0')
+                    
+                    # バージョン比較
+                    if self._is_newer_version(remote_version, local_version):
+                        updates_available.append({
+                            'name': plugin_name,
+                            'current_version': local_version,
+                            'latest_version': remote_version,
+                            'description': remote_dict[plugin_name].get('description', ''),
+                            'repository': repo_url
+                        })
+            
+            return True, updates_available
+        
+        except Exception as e:
+            return False, []
+    
+    def _is_newer_version(self, version1: str, version2: str) -> bool:
+        """
+        version1がversion2より新しいかチェック（簡易セマンティックバージョニング）
+        
+        Args:
+            version1: 比較するバージョン（新しいと思われる方）
+            version2: 比較するバージョン（古いと思われる方）
+        
+        Returns:
+            version1がversion2より新しい場合True
+        """
+        try:
+            # バージョン文字列を数値リストに変換
+            v1_parts = [int(x) for x in version1.split('.')]
+            v2_parts = [int(x) for x in version2.split('.')]
+            
+            # 長さを揃える（短い方に0を追加）
+            max_len = max(len(v1_parts), len(v2_parts))
+            v1_parts.extend([0] * (max_len - len(v1_parts)))
+            v2_parts.extend([0] * (max_len - len(v2_parts)))
+            
+            # 各パートを比較
+            for i in range(max_len):
+                if v1_parts[i] > v2_parts[i]:
+                    return True
+                elif v1_parts[i] < v2_parts[i]:
+                    return False
+            
+            # 完全に同じ
+            return False
+        
+        except (ValueError, AttributeError):
+            # パースエラーの場合は文字列比較
+            return version1 > version2
 

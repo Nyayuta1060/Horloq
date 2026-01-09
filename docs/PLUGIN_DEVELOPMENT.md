@@ -38,6 +38,10 @@ description: サンプルプラグイン
 min_horloq_version: 0.1.0
 ```
 
+**重要**: `plugin.yaml`がプラグインメタデータの**唯一の情報源**です。  
+Pythonコード内で`name`、`version`、`author`、`description`を指定する必要はありません。  
+`PluginBase`のコンストラクタが自動的に`plugin.yaml`からメタデータを読み込みます。
+
 ### 3. plugins.yaml（モノレポの場合）
 
 複数のプラグインを1つのリポジトリで管理する場合、ルートに`plugins.yaml`を配置します：
@@ -75,13 +79,9 @@ class ExamplePlugin(PluginBase):
     """サンプルプラグイン"""
     
     def __init__(self, app_context):
-        super().__init__(
-            name="example",
-            version="1.0.0",
-            author="Your Name",
-            description="サンプルプラグイン",
-            app_context=app_context,
-        )
+        # plugin.yamlから自動的にメタデータを読み込みます
+        # name, version, author, description は指定不要です
+        super().__init__(app_context)
     
     def initialize(self) -> bool:
         """初期化"""

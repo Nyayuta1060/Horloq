@@ -4,7 +4,9 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
+from pathlib import Path
 import customtkinter as ctk
+import yaml
 
 
 class PluginBase(ABC):
@@ -26,15 +28,18 @@ class PluginBase(ABC):
                 - config: ConfigManager
                 - events: EventManager
                 - themes: ThemeManager
-            name: プラグイン名
-            version: バージョン
-            author: 作者
-            description: 説明
+            name: プラグイン名（省略可：plugin.yamlから自動読み込み）
+            version: バージョン（省略可：plugin.yamlから自動読み込み）
+            author: 作者（省略可：plugin.yamlから自動読み込み）
+            description: 説明（省略可：plugin.yamlから自動読み込み）
         """
-        self.name = name
-        self.version = version
-        self.author = author
-        self.description = description
+        # plugin.yamlからメタデータを読み込む（ハードコーディングよりも優先）
+        metadata = self._load_plugin_metadata()
+        
+        self.name = metadata.get('name', name)
+        self.version = metadata.get('version', version)
+        self.author = metadata.get('author', author)
+        self.description = metadata.get('description', description)
         
         self.app_context = app_context
         self.config = app_context.get("config")
@@ -43,6 +48,31 @@ class PluginBase(ABC):
         
         self._widget: Optional[ctk.CTkFrame] = None
         self._enabled = False
+    
+    def _load_plugin_metadata(self) -> Dict[str, Any]:
+        """
+        plugin.yamlからメタデータを読み込む
+        
+        Returns:
+            メタデータの辞書
+        """
+        try:
+            # プラグインクラスのファイルパスから plugin.yaml を探す
+            import inspect
+            class_file = Path(inspect.getfile(self.__class__))
+            plugin_dir = class_file.parent
+            plugin_yaml = plugin_dir / "plugin.yaml"
+            
+            if plugin_yaml.exists():
+                with open(plugin_yaml, 'r', encoding='utf-8') as f:
+                    metadata = yaml.safe_load(f)
+                    if metadata:
+                        return metadata
+        except Exception as e:
+            # エラーが発生してもフォールバック
+            pass
+        
+        return {}
     
     @abstractmethod
     def initialize(self) -> bool:

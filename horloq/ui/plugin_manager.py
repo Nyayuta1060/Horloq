@@ -37,6 +37,10 @@ class PluginManagerWindow(ctk.CTkToplevel):
         plugin_dir = config.config_path.parent / "plugins"
         self.installer = PluginInstaller(plugin_dir)
         
+        # 更新情報をキャッシュ
+        self.available_updates = {}
+        self._fetch_updates()
+        
         self._setup_window()
         self._create_widgets()
     
@@ -449,6 +453,17 @@ class PluginManagerWindow(ctk.CTkToplevel):
         )
         close_btn.pack(pady=20)
     
+    def _fetch_updates(self):
+        """プラグインの更新情報を取得"""
+        try:
+            success, updates = self.installer.check_for_updates()
+            if success and updates:
+                # プラグイン名をキーにした辞書に変換
+                self.available_updates = {u['name']: u for u in updates}
+        except Exception as e:
+            print(f"更新情報の取得に失敗: {e}")
+            self.available_updates = {}
+    
     def _create_plugin_item(self, parent, plugin_name: str, is_enabled: bool):
         """プラグインアイテムを作成"""
         item_frame = ctk.CTkFrame(parent)
@@ -500,6 +515,29 @@ class PluginManagerWindow(ctk.CTkToplevel):
             anchor="w",
         )
         desc_label.pack(anchor="w")
+        
+        # 更新情報があれば表示
+        if plugin_name in self.available_updates:
+            update_info = self.available_updates[plugin_name]
+            update_label = ctk.CTkLabel(
+                info_frame,
+                text=f"🔔 更新あり: v{update_info['current_version']} → v{update_info['latest_version']}",
+                font=("Arial", 10, "bold"),
+                text_color="#4A90E2",
+                anchor="w",
+            )
+            update_label.pack(anchor="w", pady=(2, 0))
+            
+            # 更新ボタン
+            update_btn = ctk.CTkButton(
+                item_frame,
+                text="更新",
+                command=lambda: self._update_plugin(plugin_name),
+                fg_color="#4A90E2",
+                hover_color="#357ABD",
+                width=60,
+            )
+            update_btn.pack(side="right", padx=5)
         
         # アンインストールボタンを表示（すべてのプラグインで表示）
         if plugin_info:
@@ -568,6 +606,104 @@ class PluginManagerWindow(ctk.CTkToplevel):
             command=dialog.destroy,
         )
         no_btn.pack(side="left", padx=10)
+    
+    def _update_plugin(self, plugin_name: str):
+        """プラグインを更新"""
+        if plugin_name not in self.available_updates:
+            return
+        
+        update_info = self.available_updates[plugin_name]
+        
+        # 確認ダイアログ
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("プラグイン更新")
+        dialog.geometry("450x200")
+        dialog.transient(self)
+        dialog.update_idletasks()
+        dialog.after(10, dialog.grab_set)
+        
+        message = ctk.CTkLabel(
+            dialog,
+            text=f"'{plugin_name}' を更新しますか？\n\n"
+                 f"現在のバージョン: v{update_info['current_version']}\n"
+                 f"最新バージョン: v{update_info['latest_version']}",
+            font=("Arial", 13),
+            justify="center",
+        )
+        message.pack(pady=30)
+        
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(pady=10)
+        
+        def do_update():
+            dialog.destroy()
+            
+            # プラグインを無効化
+            was_enabled = plugin_name in self.plugin_manager.list_enabled_plugins()
+            if was_enabled:
+                self.plugin_manager.unload_plugin(plugin_name)
+            
+            # 既存のプラグインをアンインストール
+            success, msg = self.installer.uninstall_plugin(plugin_name)
+            if not success:
+                error_dialog = ctk.CTkToplevel(self)
+                error_dialog.title("エラー")
+                error_dialog.geometry("400x120")
+                error_msg = ctk.CTkLabel(error_dialog, text=f"アンインストールに失敗: {msg}", font=("Arial", 12))
+                error_msg.pack(pady=30)
+                ok_btn = ctk.CTkButton(error_dialog, text="OK", command=error_dialog.destroy)
+                ok_btn.pack(pady=10)
+                return
+            
+            # 新しいバージョンをインストール
+            repo = update_info.get('repository', 'Nyayuta1060/Horloq-Plugins')
+            success, msg = self.installer.install_from_github(repo, plugin_name)
+            
+            if success:
+                # 成功ダイアログ
+                success_dialog = ctk.CTkToplevel(self)
+                success_dialog.title("成功")
+                success_dialog.geometry("400x120")
+                success_msg = ctk.CTkLabel(
+                    success_dialog,
+                    text=f"'{plugin_name}' を v{update_info['latest_version']} に更新しました",
+                    font=("Arial", 12)
+                )
+                success_msg.pack(pady=30)
+                ok_btn = ctk.CTkButton(success_dialog, text="OK", command=success_dialog.destroy)
+                ok_btn.pack(pady=10)
+                
+                # 以前有効だった場合は再度有効化
+                if was_enabled:
+                    self.plugin_manager.load_plugin(plugin_name)
+                
+                # リストを再読み込み
+                self._reload_plugins()
+            else:
+                # エラーダイアログ
+                error_dialog = ctk.CTkToplevel(self)
+                error_dialog.title("エラー")
+                error_dialog.geometry("400x150")
+                error_msg = ctk.CTkLabel(error_dialog, text=f"更新に失敗:\n{msg}", font=("Arial", 12))
+                error_msg.pack(pady=30)
+                ok_btn = ctk.CTkButton(error_dialog, text="OK", command=error_dialog.destroy)
+                ok_btn.pack(pady=10)
+        
+        update_btn = ctk.CTkButton(
+            btn_frame,
+            text="更新",
+            command=do_update,
+            fg_color="#4A90E2",
+            hover_color="#357ABD",
+        )
+        update_btn.pack(side="left", padx=10)
+        
+        cancel_btn = ctk.CTkButton(
+            btn_frame,
+            text="キャンセル",
+            command=dialog.destroy,
+        )
+        cancel_btn.pack(side="left", padx=10)
     
     def _toggle_plugin(self, plugin_name: str, enable: bool):
         """プラグインの有効/無効を切り替え"""
