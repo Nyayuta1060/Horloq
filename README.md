@@ -205,7 +205,7 @@ ls dist/
 
 1. このリポジトリをフォーク
 2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'feat: add amazing feature'`)
+3. 変更をコミット (`git commit -m 'feat: add amazing feature`)
 4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
 5. プルリクエストを作成
 
@@ -229,3 +229,4 @@ ls dist/
 ---
 
 Made with ❤️ by Nyayuta1060
+2025 Dec - now
