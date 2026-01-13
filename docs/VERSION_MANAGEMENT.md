@@ -97,6 +97,29 @@ python setup.py --version
 
 ### ステップ4: コミット＆タグ
 
+#### 方法1: リリーススクリプトを使用（推奨）
+
+```bash
+# スクリプトに実行権限を付与（初回のみ）
+chmod +x scripts/release-commit.sh
+
+# スクリプトを実行
+./scripts/release-commit.sh
+
+# バージョンを入力
+Enter version tag (e.g., v0.3.0): v0.3.0
+
+# スクリプトが自動的に:
+# - __init__.py との整合性確認（不一致なら更新を提案）
+# - git add horloq/__init__.py
+# - git commit -m "chore: bump version to 0.3.0"
+# - git tag v0.3.0
+# - git push origin main --tags
+# を実行します
+```
+
+#### 方法2: 手動実行
+
 ```bash
 git add horloq/__init__.py
 git commit -m "chore: bump version to 0.3.0"
