@@ -7,6 +7,7 @@ from typing import Optional, List, Dict, Any
 from .config import ConfigManager
 from .events import EventManager
 from .theme import ThemeManager
+from .updater import UpdateChecker
 from ..plugins.manager import PluginManager
 from ..plugins.installer import PluginInstaller
 from ..ui.window import MainWindow
@@ -50,6 +51,9 @@ class HorloqApp:
         # プラグインインストーラーを初期化
         self.plugin_installer = PluginInstaller(plugin_dirs[0] if plugin_dirs else None)
         
+        # アップデートチェッカーを初期化
+        self.update_checker = UpdateChecker()
+        
         # ウィンドウ
         self.window: Optional[MainWindow] = None
         self.clock_widget: Optional[DigitalClock] = None
@@ -66,6 +70,9 @@ class HorloqApp:
         # 更新通知バナー
         self.update_banner: Optional[ctk.CTkFrame] = None
         self.pending_updates: List[Dict[str, Any]] = []
+        self.app_update_available: bool = False
+        self.app_latest_version: Optional[str] = None
+        self.app_release_url: Optional[str] = None
         
         # イベントリスナーを登録
         self._setup_event_listeners()
@@ -421,21 +428,31 @@ class HorloqApp:
         # イベントを発行
         self.events.emit("app_started")
         
-        # プラグインの更新をチェック（非同期）
-        self._check_plugin_updates()
+        # プラグインと本体の更新をチェック（非同期）
+        self._check_updates()
         
         # メインループを開始
         if self.window:
             self.window.show()
     
-    def _check_plugin_updates(self):
-        """プラグインの更新をチェック（非同期）"""
-        def check_updates():
+    def _check_updates(self):
+        """プラグインと本体の更新をチェック（非同期）"""
+        def check_all_updates():
             try:
+                # Horloq本体のアップデートチェック
+                has_update, latest_ver, release_url = self.update_checker.check_for_updates()
+                if has_update:
+                    self.app_update_available = True
+                    self.app_latest_version = latest_ver
+                    self.app_release_url = release_url
+                
+                # プラグインのアップデートチェック
                 success, updates = self.plugin_installer.check_for_updates()
                 if success and updates:
                     self.pending_updates = updates
-                    # メインスレッドで更新通知を表示
+                
+                # 更新があれば通知を表示
+                if self.app_update_available or self.pending_updates:
                     if self.window:
                         self.window.after(100, self._show_update_notification)
             except Exception as e:
@@ -443,12 +460,19 @@ class HorloqApp:
         
         # 別スレッドで実行（ネットワーク処理をブロックしない）
         import threading
-        thread = threading.Thread(target=check_updates, daemon=True)
+        thread = threading.Thread(target=check_all_updates, daemon=True)
         thread.start()
+    
+    def _check_plugin_updates(self):
+        """プラグインの更新をチェック（非同期）- 後方互換性のため残す"""
+        self._check_updates()
     
     def _show_update_notification(self):
         """更新通知バナーを表示"""
-        if not self.window or not self.pending_updates:
+        if not self.window:
+            return
+        
+        if not self.app_update_available and not self.pending_updates:
             return
         
         # 既存のバナーがあれば削除
@@ -479,14 +503,24 @@ class HorloqApp:
         )
         icon_label.pack(side="left", padx=(0, 10))
         
-        update_count = len(self.pending_updates)
-        plugin_names = ", ".join([u['name'] for u in self.pending_updates[:3]])
-        if update_count > 3:
-            plugin_names += f" 他{update_count - 3}件"
+        # メッセージを構築
+        messages = []
+        if self.app_update_available:
+            current_ver = self.update_checker.get_current_version()
+            messages.append(f"Horloq {current_ver} → {self.app_latest_version}")
+        
+        if self.pending_updates:
+            update_count = len(self.pending_updates)
+            plugin_names = ", ".join([u['name'] for u in self.pending_updates[:2]])
+            if update_count > 2:
+                plugin_names += f" 他{update_count - 2}件"
+            messages.append(f"プラグイン更新: {plugin_names}")
+        
+        message_text = " / ".join(messages) if messages else "更新があります"
         
         message_label = ctk.CTkLabel(
             message_frame,
-            text=f"{update_count}個のプラグイン更新があります: {plugin_names}",
+            text=message_text,
             font=("Arial", 12),
             text_color="#FFFFFF",
         )
@@ -528,13 +562,16 @@ class HorloqApp:
     
     def _show_update_details(self):
         """更新詳細をポップアップで表示"""
-        if not self.window or not self.pending_updates:
+        if not self.window:
+            return
+        
+        if not self.app_update_available and not self.pending_updates:
             return
         
         # ポップアップウィンドウ
         popup = ctk.CTkToplevel(self.window)
-        popup.title("プラグイン更新")
-        popup.geometry("500x400")
+        popup.title("更新情報")
+        popup.geometry("550x500")
         popup.attributes("-topmost", True)
         
         # ヘッダー
@@ -546,34 +583,118 @@ class HorloqApp:
         header.pack(pady=15)
         
         # スクロール可能なフレーム
-        scroll_frame = ctk.CTkScrollableFrame(popup, width=460, height=250)
+        scroll_frame = ctk.CTkScrollableFrame(popup, width=510, height=320)
         scroll_frame.pack(padx=20, pady=10, fill="both", expand=True)
         
-        # 各プラグインの更新情報を表示
-        for update in self.pending_updates:
-            plugin_frame = ctk.CTkFrame(scroll_frame, corner_radius=8)
-            plugin_frame.pack(fill="x", pady=5, padx=5)
+        # Horloq本体の更新情報
+        if self.app_update_available:
+            app_frame = ctk.CTkFrame(scroll_frame, corner_radius=8, fg_color="#2B5A8E")
+            app_frame.pack(fill="x", pady=5, padx=5)
             
-            # プラグイン名とバージョン
+            # アプリ名とバージョン
             name_label = ctk.CTkLabel(
-                plugin_frame,
-                text=f"📦 {update['name']}",
-                font=("Arial", 14, "bold"),
+                app_frame,
+                text="⭐ Horloq 本体",
+                font=("Arial", 16, "bold"),
+                text_color="#FFFFFF",
             )
-            name_label.pack(anchor="w", padx=15, pady=(10, 5))
+            name_label.pack(anchor="w", padx=15, pady=(15, 5))
             
+            current_ver = self.update_checker.get_current_version()
             version_label = ctk.CTkLabel(
-                plugin_frame,
-                text=f"v{update['current_version']} → v{update['latest_version']}",
-                font=("Arial", 11),
-                text_color="#4A90E2",
+                app_frame,
+                text=f"v{current_ver} → v{self.app_latest_version}",
+                font=("Arial", 12, "bold"),
+                text_color="#90CAF9",
             )
             version_label.pack(anchor="w", padx=15, pady=(0, 5))
             
             desc_label = ctk.CTkLabel(
-                plugin_frame,
-                text=update['description'],
+                app_frame,
+                text="新しいバージョンが利用可能です",
                 font=("Arial", 10),
+                text_color="#E3F2FD",
+            )
+            desc_label.pack(anchor="w", padx=15, pady=(0, 10))
+            
+            # ダウンロードボタン
+            import sys
+            platform_name = 'windows' if sys.platform == 'win32' else 'linux' if sys.platform == 'linux' else 'macos'
+            download_url = self.update_checker.get_download_url(platform_name)
+            
+            def open_download():
+                import webbrowser
+                webbrowser.open(download_url)
+            
+            btn_frame = ctk.CTkFrame(app_frame, fg_color="transparent")
+            btn_frame.pack(anchor="w", padx=15, pady=(0, 15))
+            
+            download_btn = ctk.CTkButton(
+                btn_frame,
+                text="ダウンロードページを開く",
+                command=open_download,
+                fg_color="#4A90E2",
+                hover_color="#357ABD",
+                width=180,
+            )
+            download_btn.pack(side="left", padx=(0, 10))
+            
+            if self.app_release_url:
+                def open_release_notes():
+                    import webbrowser
+                    webbrowser.open(self.app_release_url)
+                
+                notes_btn = ctk.CTkButton(
+                    btn_frame,
+                    text="リリースノート",
+                    command=open_release_notes,
+                    fg_color="transparent",
+                    hover_color="#1E4A7A",
+                    border_width=1,
+                    border_color="#4A90E2",
+                    width=120,
+                )
+                notes_btn.pack(side="left")
+        
+        # プラグインの更新情報
+        if self.pending_updates:
+            # セパレーター（本体更新がある場合のみ）
+            if self.app_update_available:
+                separator = ctk.CTkFrame(scroll_frame, height=2, fg_color="gray")
+                separator.pack(fill="x", pady=15, padx=5)
+                
+                plugin_header = ctk.CTkLabel(
+                    scroll_frame,
+                    text="プラグイン更新",
+                    font=("Arial", 14, "bold"),
+                )
+                plugin_header.pack(anchor="w", padx=5, pady=(5, 10))
+            
+            # 各プラグインの更新情報を表示
+            for update in self.pending_updates:
+                plugin_frame = ctk.CTkFrame(scroll_frame, corner_radius=8)
+                plugin_frame.pack(fill="x", pady=5, padx=5)
+                
+                # プラグイン名とバージョン
+                name_label = ctk.CTkLabel(
+                    plugin_frame,
+                    text=f"📦 {update['name']}",
+                    font=("Arial", 14, "bold"),
+                )
+                name_label.pack(anchor="w", padx=15, pady=(10, 5))
+                
+                version_label = ctk.CTkLabel(
+                    plugin_frame,
+                    text=f"v{update['current_version']} → v{update['latest_version']}",
+                    font=("Arial", 11),
+                    text_color="#4A90E2",
+                )
+                version_label.pack(anchor="w", padx=15, pady=(0, 5))
+                
+                desc_label = ctk.CTkLabel(
+                    plugin_frame,
+                    text=update['description'],
+                    font=("Arial", 10),
                 wraplength=400,
             )
             desc_label.pack(anchor="w", padx=15, pady=(0, 10))
