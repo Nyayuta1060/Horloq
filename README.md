@@ -192,6 +192,18 @@ ls dist/
 - [技術設計書](docs/TECHNICAL_DESIGN.md) - API設計とデータフロー
 - [Python実装詳細](docs/PYTHON_IMPLEMENTATION.md) - コード実装の詳細
 - [開発ガイド](docs/DEVELOPMENT.md) - 開発環境とコーディング規約
+- [Windowsトラブルシューティング](docs/WINDOWS_TROUBLESHOOTING.md) - Windows環境での問題解決
+
+## トラブルシューティング
+
+### Windowsでプラグインがインストールできない
+
+Windows環境で依存関係のインストールに問題がある場合は、[Windowsトラブルシューティングガイド](docs/WINDOWS_TROUBLESHOOTING.md)を参照してください。
+
+よくある問題：
+- 権限エラー → `python -m pip install --user パッケージ名`
+- pynputのビルドエラー → Microsoft C++ Build Tools が必要
+- Pythonが見つからない → PATH設定を確認
 
 ## コントリビューション
 

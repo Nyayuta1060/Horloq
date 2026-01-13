@@ -288,35 +288,111 @@ class PluginInstaller:
             (成功フラグ, メッセージ)
         """
         try:
-            # sys.executableを使用してバイナリ環境でも動作するようにする
-            result = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)],
-                capture_output=True,
-                text=True,
-                timeout=120,  # 2分でタイムアウト
-            )
+            # Python実行可能ファイルのパスを取得
+            python_exe = sys.executable
             
-            if result.returncode != 0:
-                # エラーメッセージを整形
-                error_msg = result.stderr.strip() if result.stderr else "不明なエラー"
-                return False, f"依存関係のインストールに失敗しました。\n手動でインストールしてください: pip install -r {requirements_path.name}\n詳細: {error_msg}"
+            # PyInstallerバイナリの場合、システムのPythonを探す
+            if getattr(sys, 'frozen', False):
+                # Windowsの場合
+                if sys.platform == 'win32':
+                    # py launcherを試す
+                    try:
+                        subprocess.run(['py', '--version'], capture_output=True, check=True)
+                        python_exe = 'py'
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        # python3を試す
+                        try:
+                            subprocess.run(['python3', '--version'], capture_output=True, check=True)
+                            python_exe = 'python3'
+                        except (subprocess.CalledProcessError, FileNotFoundError):
+                            # pythonを試す
+                            try:
+                                subprocess.run(['python', '--version'], capture_output=True, check=True)
+                                python_exe = 'python'
+                            except (subprocess.CalledProcessError, FileNotFoundError):
+                                return False, (
+                                    "Pythonが見つかりません。\n"
+                                    "依存関係を手動でインストールしてください:\n"
+                                    f"python -m pip install -r {requirements_path.name}"
+                                )
+                else:
+                    # Linux/macOSの場合
+                    python_exe = 'python3'
             
-            # インストール成功時、インストールされたパッケージを抽出
+            # パッケージリストを読み込み
             installed_packages = []
             with open(requirements_path, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith('#'):
-                        # パッケージ名のみを抽出（バージョン指定を除去）
                         pkg = line.split('>=')[0].split('==')[0].split('<')[0].split('>')[0].strip()
                         if pkg:
                             installed_packages.append(pkg)
             
-            if installed_packages:
-                pkg_list = ', '.join(installed_packages)
-                return True, f"依存関係をインストールしました: {pkg_list}"
+            if not installed_packages:
+                return True, "インストールする依存関係がありません"
+            
+            # Windowsでの特別な処理
+            extra_args = []
+            if sys.platform == 'win32':
+                # --user オプションで権限エラーを回避
+                extra_args.append('--user')
+            
+            # pipコマンドを構築
+            pip_cmd = [python_exe, "-m", "pip", "install", "-r", str(requirements_path)]
+            pip_cmd.extend(extra_args)
+            
+            # 環境変数を設定（文字エンコーディング問題を回避）
+            env = os.environ.copy()
+            env['PYTHONIOENCODING'] = 'utf-8'
+            
+            # Windowsでshell=Trueを使う場合はコマンドを文字列に変換
+            if sys.platform == 'win32':
+                # コマンドを文字列に変換（引用符でパスを保護）
+                pip_cmd_str = ' '.join(f'"{arg}"' if ' ' in arg else arg for arg in pip_cmd)
+                result = subprocess.run(
+                    pip_cmd_str,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                    env=env,
+                    shell=True,
+                )
             else:
-                return True, "依存関係をインストールしました"
+                # Linux/macOSではリストのまま実行
+                result = subprocess.run(
+                    pip_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                    env=env,
+                    shell=False,
+                )
+            
+            if result.returncode != 0:
+                error_msg = result.stderr.strip() if result.stderr else "不明なエラー"
+                
+                # Windowsで権限エラーの場合は管理者権限の案内
+                if sys.platform == 'win32' and ('permission' in error_msg.lower() or 'access' in error_msg.lower()):
+                    return False, (
+                        "依存関係のインストールに失敗しました（権限エラー）。\n\n"
+                        "以下の方法をお試しください：\n"
+                        "1. コマンドプロンプトを管理者として実行し、以下を実行:\n"
+                        f"   python -m pip install -r {requirements_path}\n\n"
+                        "2. または手動でパッケージをインストール:\n"
+                        f"   python -m pip install {' '.join(installed_packages)}\n\n"
+                        f"詳細: {error_msg}"
+                    )
+                
+                return False, (
+                    "依存関係のインストールに失敗しました。\n\n"
+                    "手動でインストールしてください:\n"
+                    f"python -m pip install -r {requirements_path.name}\n\n"
+                    f"詳細: {error_msg}"
+                )
+            
+            pkg_list = ', '.join(installed_packages)
+            return True, f"依存関係をインストールしました: {pkg_list}"
         
         except subprocess.TimeoutExpired:
             return False, "依存関係のインストールがタイムアウトしました。\nネットワーク接続を確認してください。"
