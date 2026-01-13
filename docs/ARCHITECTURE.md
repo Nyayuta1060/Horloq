@@ -1,33 +1,55 @@
-# Horloq アーキテクチャ設計
+# Horloq アーキテクチャドキュメント
 
-## 概要
-Horloqは、拡張可能なデスクトップ据え置き時計アプリケーションです。プラグインシステムにより、ユーザーが自由に機能を追加・カスタマイズできる設計を採用しています。
+> Horloqの設計思想、システム構造、技術スタックの包括的なドキュメントです。  
+> プロジェクト全体の理解を深めたい開発者や、コントリビューターにお勧めです。
+
+## 目次
+
+- [システム概要](#システム概要)
+- [技術スタック](#技術スタック)
+- [アーキテクチャ図](#アーキテクチャ図)
+- [ディレクトリ構造](#ディレクトリ構造)
+- [コアコンポーネント](#コアコンポーネント)
+- [プラグインシステム](#プラグインシステム)
+- [データフロー](#データフロー)
+- [設計原則](#設計原則)
+
+## システム概要
+
+Horloqは**シングルプロセス**で動作するPythonベースのデスクトップアプリケーションです。
+
+### 主要特徴
+
+- **CustomTkinter**: モダンなGUI（Tkinter拡張）
+- **プラグインシステム**: 動的な機能拡張
+- **YAML設定**: 人間が読みやすい設定管理
+- **クロスプラットフォーム**: Windows, macOS, Linux対応
 
 ## 技術スタック
 
 ### コア技術
-- **言語**: Python 3.11+
-- **GUIフレームワーク**: CustomTkinter (モダンなTkinter拡張)
-- **プラグインシステム**: Pythonモジュールベース
+| 分類       | 技術           | 用途                 |
+| ---------- | -------------- | -------------------- |
+| **言語**   | Python 3.11+   | 本体実装             |
+| **GUI**    | CustomTkinter  | モダンなUI           |
+| **ビルド** | PyInstaller    | 実行ファイル生成     |
+| **CI/CD**  | GitHub Actions | 自動ビルド・リリース |
 
 ### 主要ライブラリ
-- **CustomTkinter**: モダンなUI
-- **Pillow**: 画像処理
-- **requests**: HTTP通信（プラグイン用）
-- **python-dateutil**: 日時処理
-- **pyyaml**: 設定ファイル管理
-
-### 配布・ビルド
-- **PyInstaller**: EXE化
-- **GitHub Actions**: CI/CD
-- **GitHub Releases**: 配布
+| ライブラリ    | 用途                     |
+| ------------- | ------------------------ |
+| customtkinter | モダンなTkinterラッパー  |
+| Pillow        | 画像処理                 |
+| PyYAML        | YAML設定ファイル         |
+| requests      | HTTP通信（プラグイン用） |
 
 ### 開発ツール
-- **パッケージマネージャー**: pip, poetry
-- **テスト**: pytest
-- **リンター**: ruff, pylint
-- **フォーマッター**: black
-- **型チェック**: mypy
+| ツール | 用途                 |
+| ------ | -------------------- |
+| pytest | ユニットテスト       |
+| ruff   | 高速リンター         |
+| black  | コードフォーマッター |
+| mypy   | 型チェック           |
 
 ## システムアーキテクチャ
 
@@ -220,12 +242,261 @@ UI Update (widget.configure() / after())
    → self.clock_label.configure(text=new_format)
 ```
 
-## プラグインシステム設計
+## プラグインシステム
 
-### プラグインの構造
-各プラグインは以下の構造を持ちます：
+### プラグインの基本構造
+
+```
+my-plugin/
+├── plugin.yaml       # メタデータ（唯一の情報源）
+├── __init__.py      # プラグイン本体
+├── README.md        # 説明
+└── requirements.txt # 依存関係（オプション）
+```
+
+### plugin.yaml
+
+```yaml
+name: my-plugin
+version: 1.0.0
+author: Your Name
+description: プラグインの説明
+min_horloq_version: 0.2.0
+```
+
+**重要**: `plugin.yaml`が**唯一の情報源**です。Pythonコードでメタデータを重複定義する必要はありません。
+
+### プラグイン実装例
 
 ```python
+# __init__.py
+from horloq.plugins.base import PluginBase
+import customtkinter as ctk
+
+class MyPlugin(PluginBase):
+    """プラグイン実装"""
+    
+    def __init__(self, app_context):
+        # plugin.yamlから自動的にメタデータ読み込み
+        super().__init__(app_context)
+        self.widget = None
+    
+    def initialize(self) -> bool:
+        """初期化処理"""
+        print(f"{self.name} initialized!")
+        return True
+    
+    def create_widget(self, parent):
+        """ウィジェット作成"""
+        frame = ctk.CTkFrame(parent)
+        label = ctk.CTkLabel(frame, text="Hello from plugin!")
+        label.pack(pady=10)
+        return frame
+    
+    def shutdown(self):
+        """終了処理"""
+        print(f"{self.name} shutdown")
+
+# プラグインクラスをエクスポート
+Plugin = MyPlugin
+```
+
+### プラグインライフサイクル
+
+```
+1. ロード (load_plugin)
+   - plugin.yamlの読み込み
+   - Pythonモジュールのインポート
+   
+2. 初期化 (initialize)
+   - プラグイン固有の初期化処理
+   
+3. 有効化 (enable)
+   - ウィジェットの作成と表示
+   - イベントリスナーの登録
+   
+4. 実行中
+   - イベント処理
+   - ユーザー操作への応答
+   
+5. 無効化 (disable)
+   - イベントリスナーの解除
+   - ウィジェットの削除
+   
+6. アンロード
+   - リソースのクリーンアップ
+```
+
+### プラグインAPI
+
+プラグインが利用できる主なAPI：
+
+```python
+class PluginBase:
+    """すべてのプラグインの基底クラス"""
+    
+    def __init__(self, app_context):
+        self.app = app_context           # アプリケーション参照
+        self.config = app_context.config # 設定マネージャー
+        self.events = app_context.events # イベントシステム
+        # メタデータはplugin.yamlから自動読み込み
+        self.name = None
+        self.version = None
+        self.author = None
+        self.description = None
+    
+    # 実装必須メソッド
+    def initialize(self) -> bool: ...
+    def shutdown(self): ...
+    
+    # オプショナル
+    def create_widget(self, parent): ...
+    def on_config_changed(self, key, value): ...
+```
+
+## 設定管理
+
+### 設定ファイル構造
+
+```yaml
+# ~/.config/horloq/config.yaml
+window:
+  width: 400
+  height: 200
+  always_on_top: true
+  opacity: 1.0
+
+clock:
+  format: "24h"  # または "12h"
+  show_seconds: true
+  show_date: true
+  font_size: 48
+
+theme:
+  name: "dark"
+  custom_colors:
+    bg: "#1a1a1a"
+    fg: "#ffffff"
+
+plugins:
+  enabled:
+    - hello
+    - timer
+  configs:
+    weather:
+      api_key: "your-api-key"
+      location: "Tokyo"
+```
+
+### ConfigManagerの使い方
+
+```python
+# 設定の取得（ドット記法）
+width = config.get("window.width", 400)
+theme = config.get("theme.name", "dark")
+
+# 設定の更新
+config.set("window.width", 500)
+config.set("plugins.enabled", ["hello", "timer"])
+
+# 設定の保存
+config.save()
+```
+
+## イベントシステム
+
+### イベント駆動アーキテクチャ
+
+```python
+# イベントの発火
+events.emit("time_updated", {"time": datetime.now()})
+
+# イベントの購読
+def on_time_update(data):
+    print(f"Time: {data['time']}")
+
+events.on("time_updated", on_time_update)
+
+# イベントの購読解除
+events.off("time_updated", on_time_update)
+```
+
+### 標準イベント
+
+| イベント名        | 発火タイミング     | データ         |
+| ----------------- | ------------------ | -------------- |
+| `app_started`     | アプリ起動完了     | -              |
+| `app_closing`     | アプリ終了前       | -              |
+| `config_changed`  | 設定変更時         | `{key, value}` |
+| `theme_changed`   | テーマ変更時       | `{theme_name}` |
+| `plugin_loaded`   | プラグインロード時 | `{plugin_id}`  |
+| `plugin_enabled`  | プラグイン有効化時 | `{plugin_id}`  |
+| `plugin_disabled` | プラグイン無効化時 | `{plugin_id}`  |
+| `time_updated`    | 時刻更新時         | `{time}`       |
+
+## セキュリティ考慮事項
+
+### プラグインの制限
+
+1. **ファイルシステムアクセス**
+   - プラグインディレクトリ内のみアクセス可能
+   - システムファイルへの書き込み制限
+
+2. **ネットワークアクセス**
+   - HTTP/HTTPS通信のみ許可
+   - ローカルネットワークスキャン禁止
+
+3. **APIの制限**
+   - 提供されたPluginAPIのみ使用可能
+   - 内部実装への直接アクセス禁止
+
+## パフォーマンス最適化
+
+### 1. 起動時間の最適化
+- プラグインの遅延ロード
+- 必要なプラグインのみ初期化
+- 設定ファイルのキャッシュ
+
+### 2. メモリ使用量の削減
+- 未使用プラグインのアンロード
+- イベントリスナーの適切なクリーンアップ
+- 画像リソースの最適化
+
+### 3. UI応答性の向上
+- 時計更新の最適化（必要最小限のredraw）
+- 長時間処理のスレッド化
+- after()による非同期UI更新
+
+## 拡張性
+
+### 将来の拡張ポイント
+
+1. **テーマシステムの強化**
+   - CSSライクなテーマ記述
+   - テーマのホットリロード
+   - コミュニティテーマの共有
+
+2. **プラグインマーケットプレイス**
+   - GitHub Releases経由でのプラグイン配布
+   - 自動更新機能
+   - レビュー・評価システム
+
+3. **多言語対応**
+   - i18n/l10nサポート
+   - プラグインごとの翻訳ファイル
+   - 動的言語切り替え
+
+4. **ウィジェットシステムの拡張**
+   - カスタムレイアウトエンジン
+   - ドラッグ&ドロップによるレイアウト編集
+   - ウィジェットのリサイズ・配置カスタマイズ
+
+## 関連ドキュメント
+
+- [開発ガイド](DEVELOPMENT.md) - 開発環境のセットアップと開発フロー
+- [プラグイン開発ガイド](PLUGIN_DEVELOPMENT.md) - プラグイン開発の詳細
+- [機能仕様書](FEATURES.md) - 実装されている機能の詳細
+- [バージョン管理ガイド](VERSION_MANAGEMENT.md) - バージョン管理とリリース手順
 # manifest.yaml
 id: my-plugin
 name: My Plugin
@@ -309,44 +580,9 @@ class EventApi:
     def emit(self, event: str, data: Any) -> None: ...
 ```
 
-## セキュリティ考慮事項
+## 関連ドキュメント
 
-1. **プラグインのサンドボックス化**
-   - プラグインは制限されたAPIのみアクセス可能
-   - 明示的な権限モデル
-
-2. **IPC通信の検証**
-   - すべてのIPC通信でデータバリデーション
-   - 型安全な通信
-
-3. **外部リソースのアクセス制御**
-   - ネットワークアクセスは権限が必要
-   - ファイルシステムアクセスの制限
-
-## パフォーマンス考慮事項
-
-1. **レンダリング最適化**
-   - 時計の更新は必要最小限に
-   - React.memo や useMemo の活用
-
-2. **プラグインの遅延ロード**
-   - 必要なプラグインのみロード
-   - 非同期初期化
-
-3. **メモリ管理**
-   - 未使用プラグインのアンロード
-   - イベントリスナーの適切なクリーンアップ
-
-## 拡張性
-
-1. **テーマシステム**
-   - CSS変数によるカスタマイズ
-   - テーマプラグインのサポート
-
-2. **ウィジェットシステム**
-   - プラグインがカスタムウィジェットを追加可能
-   - レイアウトのカスタマイズ
-
-3. **多言語対応**
-   - i18n対応
-   - プラグインごとの翻訳ファイル
+- [開発ガイド](DEVELOPMENT.md) - 開発環境のセットアップと開発フロー
+- [プラグイン開発ガイド](PLUGIN_DEVELOPMENT.md) - プラグイン開発の詳細
+- [機能仕様書](FEATURES.md) - 実装されている機能の詳細
+- [バージョン管理ガイド](VERSION_MANAGEMENT.md) - バージョン管理とリリース手順

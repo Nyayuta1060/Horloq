@@ -1,0 +1,10 @@
+# スクリーンショット配置ディレクトリ
+
+このディレクトリには、README.md用のスクリーンショットを配置してください。
+
+必要な画像：
+- screenshot-main.png - メイン時計画面
+- screenshot-settings.png - 設定ウィンドウ
+- screenshot-plugin-manager.png - プラグイン管理UI
+- screenshot-timer.png - タイマープラグイン
+- screenshot-update.png - 更新通知画面

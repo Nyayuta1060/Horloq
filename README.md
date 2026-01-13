@@ -1,7 +1,7 @@
-# Horloq - 拡張可能デスクトップ据え置き時計
+# Horloq - 拡張可能デスクトップ時計
 
-> Horloq(オルロック)はPython + CustomTkinterで作られた、プラグインシステムを備えた高機能デスクトップ時計アプリケーションです。
-> 
+> Horloq(オルロック)は、Python + CustomTkinterで作られたプラグインシステムを備えた高機能デスクトップ時計アプリケーションです。
+
 ![Horloq_icon](icon.png)
 
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -9,141 +9,128 @@
 [![Build Status](https://github.com/Nyayuta1060/Horloq/workflows/Build%20and%20Release/badge.svg)](https://github.com/Nyayuta1060/Horloq/actions)
 [![Since](https://img.shields.io/badge/since-2025.12-blue)]()
 
-## 特徴
+## 作品概要
 
-- **デジタル/アナログ時計表示** - 自由に切り替え可能な時計表示
-- **カスタマイズ可能なテーマ** - 色、フォント、透明度など自由にカスタマイズ
-- **プラグインシステム** - 機能を自由に追加・拡張できる
-- **標準プラグイン搭載** - 天気、カレンダー、タイマーなど
-- **クロスプラットフォーム** - Windows, macOS, Linux対応
-- **軽量** - メモリ使用量100MB以下
-- **常に最前面表示** - 作業中も時計を確認できる
+Horloqは、デスクトップ上に常駐する高機能時計アプリケーションです。単なる時計表示にとどまらず、プラグインシステムによる自由な機能拡張を実現した、開発者フレンドリーなデスクトップツールです。
+
+このアプリケーションの最大の特徴は、柔軟なプラグインシステムです。ユーザーは必要な機能だけを選択してインストールでき、独自のプラグインを開発して配布することも可能です。プラグインは `plugin.yaml` による宣言的なメタデータ管理を採用しており、Pythonコード内でのハードコーディングを排除した保守性の高い設計となっています。
+
+技術的には、CustomTkinterを採用することでモダンなUI/UXを実現し、PyInstallerによるクロスプラットフォームビルドにより、Windows、macOS、Linuxの3つのプラットフォームで動作する実行ファイルを自動生成します。GitHub Actionsによる完全自動化されたCI/CDパイプラインを構築しており、タグをプッシュするだけで全プラットフォーム向けのバイナリが自動ビルドされ、ドラフトリリースとして公開されます。
+
+プラグイン管理システムは、GitHub Releases APIを活用した自動更新検知機能を搭載しています。本体とプラグインの両方について、起動時に最新バージョンをチェックし、更新がある場合はユーザーに通知します。この仕組みにより、ユーザーは常に最新の機能とセキュリティ修正を利用できます。
+
+バージョン管理には「Single Source of Truth」パターンを採用し、`horloq/__init__.py`の`__version__`変数を唯一の真実の情報源として、setup.pyやpyproject.tomlから動的に読み込む設計としました。これにより、バージョン番号の不整合を根本的に防止しています。
+
+開発面では、包括的なドキュメント体系を整備し、ユーザー向け、プラグイン開発者向け、コントリビューター向けにそれぞれ適切なドキュメントを用意しています。特にWindows環境での依存ライブラリインストール問題に対しては、詳細なトラブルシューティングガイドを提供し、プラットフォーム固有の課題にも対応しています。
 
 ## スクリーンショット
 
-<!-- TODO: スクリーンショットを追加 -->
+<!-- TODO: 実際のスクリーンショットに置き換えてください -->
 
-## クイックスタート
+### メイン画面
+![メイン時計画面](docs/assets/screenshot-main.png)
+*デスクトップに常駐する時計表示。ドラッグで自由に配置可能*
 
-### インストール
+### 設定画面
+![設定ウィンドウ](docs/assets/screenshot-settings.png)
+*時計のフォーマット、テーマ、透明度などを細かくカスタマイズ*
 
-#### 方法1: バイナリダウンロード（推奨）
+### プラグイン管理
+![プラグイン管理UI](docs/assets/screenshot-plugin-manager.png)
+*公式プラグインをワンクリックでインストール・管理*
 
-最新のバイナリファイルを [Releases](https://github.com/Nyayuta1060/Horloq/releases/latest) からダウンロードできます。
+### タイマープラグイン
+![タイマー機能](docs/assets/screenshot-timer.png)
+*プラグインとして提供されるカウントダウンタイマー*
 
-**Linux:**
+### 更新通知
+![アップデート通知](docs/assets/screenshot-update.png)
+*本体とプラグインの更新を自動検知して通知*
+
+## ✨ 主な特徴
+
+- 🕐 **デジタル/アナログ時計** - 切り替え可能な表示モード
+- 🎨 **カスタマイズ** - テーマ、色、フォント、透明度を自由に設定
+- 🔌 **プラグインシステム** - 機能を自由に追加・拡張
+- 🌐 **クロスプラットフォーム** - Windows, macOS, Linux対応
+- 💡 **軽量** - メモリ使用量100MB以下
+- 🔔 **自動更新通知** - 本体とプラグインの更新を自動検知
+
+## 📥 インストール
+
+### バイナリダウンロード（推奨）
+
+最新版: [Releases](https://github.com/Nyayuta1060/Horloq/releases/latest)
+
+<details>
+<summary><b>Linux</b></summary>
+
 ```bash
 wget https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-linux-x86_64
 chmod +x horloq-linux-x86_64
 ./horloq-linux-x86_64
 ```
+</details>
 
-**Windows:**
+<details>
+<summary><b>Windows</b></summary>
+
 1. [horloq-windows-x86_64.exe](https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-windows-x86_64.exe) をダウンロード
 2. ダブルクリックして実行
 
-**macOS:**
+> **注意**: Windows Defenderの警告が出る場合は「詳細情報」→「実行」をクリック
+</details>
+
+<details>
+<summary><b>macOS</b></summary>
+
 ```bash
 curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-macos-x86_64
 chmod +x horloq
 ./horloq
 ```
+</details>
 
-#### 方法2: ソースからビルド
+### ソースからビルド
 
 ```bash
-# リポジトリをクローン
 git clone https://github.com/Nyayuta1060/Horloq.git
 cd Horloq
-
-# 仮想環境を作成
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-# 依存関係をインストール
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# 実行
 python -m horloq
 ```
 
-> **注意**: 現在はアルファ版です。基本機能のみ実装されています。
+## 🚀 クイックスタート
 
-### 基本的な使い方
+1. **起動** - アプリケーションを起動するとデスクトップに時計が表示されます
+2. **右クリックメニュー** - 設定、プラグイン管理にアクセス
+3. **ドラッグで移動** - 好きな位置に配置
+4. **プラグイン** - 右クリックメニューから追加機能をインストール
 
-1. **起動**: アプリケーションを起動すると、デスクトップに時計が表示されます
-2. **右クリックメニュー**: 時計を右クリックして設定やプラグイン管理にアクセス
-   - 設定：時計の表示設定やテーマを変更
-   - プラグイン管理：プラグインの有効/無効を切り替え
-   - 終了：アプリケーションを終了
-3. **設定**: 時計の設定は `~/.config/horloq/config.yaml` で管理されます
-4. **ドラッグで移動**: 時計ウィンドウをドラッグして好きな位置に配置
-
-## プラグイン
-
-Horloqはプラグインシステムにより機能を拡張できます。すべてのプラグインはユーザーが必要に応じてインストールできます。
-
-### 🔔 自動更新通知
-
-**Horloq v0.2.1以降、本体とプラグインの両方の更新を自動検知します。**
-
-- **Horloq本体**: 起動時にGitHubの最新リリースをチェックし、新しいバージョンがあれば通知
-- **プラグイン**: インストール済みプラグインの更新を自動検出
-- **ワンクリック更新**: 通知バナーから簡単に更新情報を確認・適用可能
+## 🔌 プラグイン
 
 ### 公式プラグイン
 
-公式プラグインは別リポジトリで管理されています。詳細は [公式プラグイン集](https://github.com/Nyayuta1060/Horloq-Plugins)を参照してください。
+各プラグインの詳細:[公式プラグイン集](https://github.com/Nyayuta1060/Horloq-Plugins)
 
-### プラグインのインストール
+### インストール方法
 
 #### GUI（推奨）
 1. Horloqを起動
-2. 右クリックメニューから「プラグイン管理」を選択
-3. 「公式プラグイン」または「カタログから選択」ボタンをクリック
-4. プラグインを選択してインストール
+2. 右クリック → 「プラグイン管理」
+3. インストールしたいプラグインを選択
 
 #### CLI
 ```bash
-# 公式プラグインをインストール
 python -m horloq plugin install Nyayuta1060/Horloq-Plugins:timer
-
-# インストール済みプラグイン一覧
 python -m horloq plugin list
 ```
 
 ### プラグイン開発
 
-独自のプラグインを作成・配布できます。
-
-**重要**: プラグインメタデータは `plugin.yaml` で管理されます。Pythonコード内でのハードコーディングは不要です。
-
-```python
-# __init__.py
-from horloq.plugins.base import PluginBase
-import customtkinter as ctk
-
-class MyPlugin(PluginBase):
-    def __init__(self, app_context):
-        # plugin.yamlから自動的にメタデータを読み込みます
-        super().__init__(app_context)
-    
-    def initialize(self):
-        return True
-    
-    def shutdown(self):
-        pass
-    
-    def create_widget(self, parent):
-        frame = ctk.CTkFrame(parent)
-        label = ctk.CTkLabel(frame, text="Hello from my plugin!")
-        label.pack(pady=10)
-        return frame
-
-# プラグインクラスをエクスポート
-Plugin = MyPlugin
-```
+プラグインは `plugin.yaml` + Python コードで作成できます。
 
 ```yaml
 # plugin.yaml
@@ -182,60 +169,63 @@ python -m horloq
 ### ビルド
 
 ```bash
-# PyInstallerでビルド
-pyinstaller horloq.spec
+# ビルドスクリプトを使用（推奨）
+chmod +x scripts/build.sh
+./scripts/build.sh           # Linux/macOS
+# または
+scripts\build.bat            # Windows
+
+# 手動ビルド
+pyinstaller build.spec
 
 # ビルド結果
 ls dist/
 ```
 
-## ドキュメント
+## 📚 ドキュメント
 
-- [アーキテクチャ設計](docs/ARCHITECTURE.md) - システム全体の設計
-- [機能仕様書](docs/FEATURES.md) - 全機能の詳細仕様
-- [技術設計書](docs/TECHNICAL_DESIGN.md) - API設計とデータフロー
-- [Python実装詳細](docs/PYTHON_IMPLEMENTATION.md) - コード実装の詳細
-- [開発ガイド](docs/DEVELOPMENT.md) - 開発環境とコーディング規約
-- [Windowsトラブルシューティング](docs/WINDOWS_TROUBLESHOOTING.md) - Windows環境での問題解決
+- **[ドキュメントインデックス](docs/README.md)** - 全ドキュメントの案内
+- [プラグイン開発ガイド](docs/PLUGIN_DEVELOPMENT.md) - プラグイン作成の詳細
+- [開発ガイド](docs/DEVELOPMENT.md) - 開発環境のセットアップ
+- [アーキテクチャ](docs/ARCHITECTURE.md) - システム設計
+- [バージョン管理 & リリース](docs/VERSION_MANAGEMENT.md) - リリース手順
+- [Windowsトラブルシューティング](docs/WINDOWS_TROUBLESHOOTING.md) - Windows環境の問題解決
 
-## トラブルシューティング
+## 🤝 コントリビューション
 
-### Windowsでプラグインがインストールできない
+コントリビューションを歓迎します！
 
-Windows環境で依存関係のインストールに問題がある場合は、[Windowsトラブルシューティングガイド](docs/WINDOWS_TROUBLESHOOTING.md)を参照してください。
-
-よくある問題：
-- 権限エラー → `python -m pip install --user パッケージ名`
-- pynputのビルドエラー → Microsoft C++ Build Tools が必要
-- Pythonが見つからない → PATH設定を確認
-
-## コントリビューション
-
-コントリビューションを歓迎します！以下の手順でお願いします：
-
-1. このリポジトリをフォーク
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'feat: add amazing feature`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+1. リポジトリをフォーク
+2. フィーチャーブランチを作成: `git checkout -b feature/amazing-feature`
+3. コミット: `git commit -m 'feat: add amazing feature'`
+4. プッシュ: `git push origin feature/amazing-feature`
 5. プルリクエストを作成
 
-詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+詳細: [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## ライセンス
+## ⚠️ トラブルシューティング
 
-このプロジェクトは MIT ライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルを参照してください。
+### Windows でプラグインがインストールできない
 
-## 謝辞
+- 権限エラー → `python -m pip install --user パッケージ名`
+- pynput ビルドエラー → [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) が必要
 
-- [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) - モダンなTkinter UI
-- [PyInstaller](https://pyinstaller.org/) - Pythonアプリのパッケージング
+詳細: [Windowsトラブルシューティング](docs/WINDOWS_TROUBLESHOOTING.md)
+
+### その他の問題
+
+[Issues](https://github.com/Nyayuta1060/Horloq/issues) で質問・報告してください。
+
+## 📜 ライセンス
+
+MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
+
+## 🙏 謝辞
+
+- [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) - モダンなUI
+- [PyInstaller](https://pyinstaller.org/) - パッケージング
 - すべてのコントリビューターの皆様
-
-## お問い合わせ
-
-- GitHub Issues: [https://github.com/Nyayuta1060/Horloq/issues](https://github.com/Nyayuta1060/Horloq/issues)
-- プロジェクトリンク: [https://github.com/Nyayuta1060/Horloq](https://github.com/Nyayuta1060/Horloq)
 
 ---
 
-Made with ❤️ by Nyayuta1060
+Made with ❤️ by [Nyayuta1060](https://github.com/Nyayuta1060)

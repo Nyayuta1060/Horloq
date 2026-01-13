@@ -1,8 +1,21 @@
-# バージョン管理ガイド
+# バージョン管理 & リリースガイド
 
-## 📌 バージョンの唯一の情報源（Single Source of Truth）
+> Horloqのバージョン管理とリリース手順の完全ガイドです。  
+> バージョン更新、ビルド、GitHub Releasesでの公開まで網羅します。
 
-Horloqプロジェクトでは、**`horloq/__init__.py`の`__version__`がバージョン情報の唯一の情報源**です。
+## 目次
+
+- [バージョン管理の基本](#バージョン管理の基本)
+- [バージョン更新手順](#バージョン更新手順)
+- [ビルド方法](#ビルド方法)
+- [リリース手順](#リリース手順)
+- [トラブルシューティング](#トラブルシューティング)
+
+## バージョン管理の基本
+
+### 📌 Single Source of Truth
+
+Horloqでは、**`horloq/__init__.py`の`__version__`がバージョン情報の唯一の情報源**です。
 
 ```python
 # horloq/__init__.py
@@ -44,19 +57,21 @@ class UpdateChecker:
         self.current_version = __version__
 ```
 
-## 📝 バージョンの更新手順
+## バージョン更新手順
 
-新しいバージョンをリリースする際は、以下の手順で行います：
+新しいバージョンをリリースする際の手順です。
 
-### 1. バージョン番号を決定
+### ステップ1: バージョン番号を決定
 
 セマンティックバージョニング（`MAJOR.MINOR.PATCH`）に従います：
 
-- **MAJOR**: 互換性のない大きな変更（例: 1.0.0 → 2.0.0）
-- **MINOR**: 後方互換性のある機能追加（例: 0.2.1 → 0.3.0）
-- **PATCH**: バグ修正（例: 0.2.1 → 0.2.2）
+| 変更の種類 | 例            | 説明                     |
+| ---------- | ------------- | ------------------------ |
+| **MAJOR**  | 1.0.0 → 2.0.0 | 互換性のない大きな変更   |
+| **MINOR**  | 0.2.1 → 0.3.0 | 後方互換性のある機能追加 |
+| **PATCH**  | 0.2.1 → 0.2.2 | バグ修正                 |
 
-### 2. `horloq/__init__.py` のみを更新
+### ステップ2: `horloq/__init__.py` を更新
 
 ```python
 # 変更前
@@ -66,19 +81,21 @@ __version__ = "0.2.1"
 __version__ = "0.3.0"
 ```
 
-**これだけでOK！** 他のファイルは自動的に更新されます。
+**これだけでOK！** 他のファイル（setup.py, pyproject.toml）は自動的に読み込みます。
 
-### 3. 変更を確認
+### ステップ3: バージョンを確認
 
 ```bash
-# バージョンが反映されているか確認
+# バージョンが正しく反映されているか確認
 python -c "import horloq; print(horloq.__version__)"
+# → 0.3.0
 
 # setup.py経由でも確認
 python setup.py --version
+# → 0.3.0
 ```
 
-### 4. コミット＆タグ
+### ステップ4: コミット＆タグ
 
 ```bash
 git add horloq/__init__.py
@@ -87,119 +104,130 @@ git tag v0.3.0
 git push origin main --tags
 ```
 
-### 5. GitHub Releasesで公開
+## ビルド方法
 
-GitHub Actionsが自動的にドラフトリリースを作成します：
+### ローカルビルド
 
-1. [Releases ページ](https://github.com/Nyayuta1060/Horloq/releases)を開く
-2. ドラフトリリース `v0.3.0` を見つける
-3. リリースノートを編集：
-   - ✨ 新機能: 追加した機能を箇条書き
-   - 🐛 バグ修正: 修正したバグを記載
-   - 📝 その他の変更: ドキュメント更新など
-   - ⚠️ Breaking Changes: 互換性のない変更（あれば）
-4. ビルド成果物が正しく添付されているか確認
-5. **「Publish release」をクリック** → 公開完了！
-
-#### 自動ビルドの流れ
-
-```
-タグをプッシュ (git push --tags)
-  ↓
-GitHub Actions が起動
-  ↓
-Linux/Windows/macOS でビルド
-  ↓
-ドラフトリリースを作成（自動）
-  ↓
-あなたがリリースノートを編集
-  ↓
-「Publish release」で公開（手動）
-```
-
-#### リリースノートのテンプレート
-
-```markdown
-## 🎉 Horloq v0.3.0
-
-### ✨ 新機能
-
-- プラグインの自動更新通知機能を追加
-- Horloq本体のアップデートチェック機能を追加
-- Windows環境での依存ライブラリインストール問題を修正
-
-### 🐛 バグ修正
-
-- タイマープラグインのリセット機能が動作しない問題を修正
-- ウィンドウ位置が保存されない問題を修正
-
-### 📝 その他の変更
-
-- ドキュメントを最新仕様に更新
-- バージョン管理を一元化
-
-### ⚠️ Breaking Changes
-
-なし
-
----
-
-**Full Changelog**: https://github.com/Nyayuta1060/Horloq/compare/v0.2.1...v0.3.0
-```
-
-## ⚠️ やってはいけないこと
-
-### ❌ 複数ファイルのバージョンを直接編集
-
-```python
-# ❌ これはやらない
-# setup.py
-version="0.3.0"
-
-# pyproject.toml
-version = "0.3.0"
-
-# horloq/__init__.py
-__version__ = "0.3.0"
-```
-
-これをすると、同期が取れなくなります。
-
-### ✅ 正しい方法
-
-```python
-# ✅ これだけでOK
-# horloq/__init__.py
-__version__ = "0.3.0"
-```
-
-## 🔍 バージョン確認方法
-
-### コマンドライン
+#### Linux/macOS
 ```bash
-# Python経由
-python -c "import horloq; print(horloq.__version__)"
-
-# CLI経由
-horloq --version
-
-# setup.py経由
-python setup.py --version
+chmod +x scripts/build.sh
+./scripts/build.sh
 ```
 
-### プログラム内
-```python
-import horloq
-print(f"Horloq version: {horloq.__version__}")
+#### Windows
+```cmd
+scripts\build.bat
 ```
 
-### GitHub Actions
-```yaml
-- name: Get version
-  run: python -c "import horloq; print(horloq.__version__)"
+ビルドされたバイナリは `dist/` ディレクトリに作成されます。
+
+### 手動ビルド（PyInstaller）
+
+```bash
+# 依存関係をインストール
+pip install pyinstaller
+
+# ビルド
+pyinstaller build.spec
+
+# 成果物
+ls dist/  # horloq または horloq.exe
 ```
 
-## 📦 リリースチェックリスト
+## リリース手順
+
+### 自動リリース（推奨）
+
+タグをプッシュすると、GitHub Actionsが自動的にビルドとドラフトリリースを作成します。
+
+```bash
+git tag v0.3.0
+git push origin main --tags
+```
+
+#### 自動実行される内容
+
+```
+タグプッシュ
+  ↓
+GitHub Actions 起動
+  ↓
+3つのプラットフォームでビルド:
+  - Linux (x86_64)
+  - Windows (x86_64)
+  - macOS (x86_64)
+  ↓
+ドラフトリリース作成（自動）
+  ↓
+手動でリリースノート編集
+  ↓
+「Publish release」で公開
+```
+
+### リリース公開の手順
+
+1. **[Releases ページ](https://github.com/Nyayuta1060/Horloq/releases)を開く**
+
+2. **ドラフトリリースを見つける**
+   - `v0.3.0` というタイトルのドラフト
+
+3. **リリースノートを編集**（テンプレートから）
+   ```markdown
+   ## 🎉 Horloq v0.3.0
+   
+   ### ✨ 新機能
+   - プラグインの自動更新通知
+   - Windows環境での依存ライブラリ自動インストール
+   
+   ### 🐛 バグ修正
+   - タイマープラグインのリセット機能を修正
+   
+   ### 📝 その他の変更
+   - ドキュメントを最新化
+   
+   ### 📥 インストール
+   
+   #### Windows
+   1. `horloq-windows-x86_64.exe` をダウンロード
+   2. ダブルクリックで実行
+   
+   #### Linux
+   ```bash
+   wget https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-linux-x86_64
+   chmod +x horloq-linux-x86_64
+   ./horloq-linux-x86_64
+   ```
+   
+   #### macOS
+   ```bash
+   curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-macos-x86_64
+   chmod +x horloq
+   ./horloq
+   ```
+   
+   ---
+   
+   **Full Changelog**: https://github.com/Nyayuta1060/Horloq/compare/v0.2.1...v0.3.0
+   ```
+
+4. **ビルド成果物を確認**
+   - horloq-linux-x86_64
+   - horloq-windows-x86_64.exe
+   - horloq-macos-x86_64
+
+5. **「Publish release」をクリック** 🎉
+
+### 手動リリース（非推奨）
+
+自動リリースが使えない場合のみ：
+
+1. ローカルでビルド
+2. [GitHub Releases](https://github.com/Nyayuta1060/Horloq/releases/new)で新規作成
+3. タグを指定（例: v0.3.0）
+4. リリースノート記載
+5. ビルド成果物をアップロード
+
+## リリースチェックリスト
 
 新しいバージョンをリリースする際のチェックリスト：
 
@@ -225,7 +253,7 @@ print(f"Horloq version: {horloq.__version__}")
   - 新機能の説明
   - バグ修正の詳細
   - Breaking Changes（あれば）
-  - スクリーンショット（あれば）
+  - インストール手順
 - [ ] ビルド成果物（3つのバイナリ）が添付されているか確認
 - [ ] **「Publish release」をクリック** 🎉
 
@@ -234,7 +262,84 @@ print(f"Horloq version: {horloq.__version__}")
 - [ ] ダウンロードリンクが動作するか確認
 - [ ] 必要に応じてSNSで告知
 
-## 🎯 なぜ一元管理が重要か
+## トラブルシューティング
+
+### ビルドエラー
+
+**問題**: `ModuleNotFoundError: No module named 'xxx'`
+
+**解決**:
+```bash
+pip install -r requirements.txt
+pip install pyinstaller
+```
+
+**問題**: バイナリが起動しない
+
+**解決**:
+- `build.spec` の `hiddenimports` に不足しているモジュールを追加
+- `console=True` に変更してエラーメッセージを確認
+
+### GitHub Actions エラー
+
+**問題**: アクションが失敗する
+
+**解決**:
+1. Actions タブでログを確認
+2. requirements.txt に全ての依存関係が記載されているか確認
+3. PyInstallerのバージョンを固定: `pip install pyinstaller==6.3.0`
+
+### バージョン不整合
+
+**問題**: 複数ファイルでバージョンがずれている
+
+**❌ 間違った方法**:
+```python
+# setup.py
+version = "0.3.0"
+
+# pyproject.toml
+version = "0.2.1"
+
+# horloq/__init__.py
+__version__ = "0.2.0"
+```
+
+**✅ 正しい方法**:
+```python
+# horloq/__init__.py のみ更新
+__version__ = "0.3.0"
+
+# setup.py と pyproject.toml は自動読み込み
+```
+
+## バージョン確認方法
+
+### コマンドライン
+```bash
+# Python経由
+python -c "import horloq; print(horloq.__version__)"
+
+# CLI経由（実装済みの場合）
+horloq --version
+
+# setup.py経由
+python setup.py --version
+```
+
+### プログラム内
+```python
+import horloq
+print(f"Horloq version: {horloq.__version__}")
+```
+
+### GitHub Actions
+```yaml
+- name: Get version
+  run: python -c "import horloq; print(horloq.__version__)"
+```
+
+## なぜ一元管理が重要か
 
 ### 問題点（一元管理しない場合）
 
@@ -251,7 +356,7 @@ version = "0.2.0"  # 😱 さらに不整合！
 
 → どれが正しいバージョンか分からない！
 
-### 解決策（一元管理）
+### 解決策（Single Source of Truth）
 
 ```python
 # horloq/__init__.py （唯一の真実）
@@ -266,8 +371,10 @@ version = {attr = "horloq.__version__"}  # → "0.2.1"
 
 → 常に整合性が保たれる！
 
-## 🔗 関連ドキュメント
+## 参考リンク
 
 - [セマンティックバージョニング](https://semver.org/lang/ja/)
 - [PEP 440 – Version Identification](https://peps.python.org/pep-0440/)
 - [setuptools dynamic metadata](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata)
+- [PyInstaller Documentation](https://pyinstaller.org/)
+- [GitHub Actions Documentation](https://docs.github.com/ja/actions)
