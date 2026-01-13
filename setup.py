@@ -1,8 +1,21 @@
 from setuptools import setup, find_packages
+from pathlib import Path
+
+# horloq/__init__.py からバージョンを読み込む
+init_file = Path(__file__).parent / "horloq" / "__init__.py"
+version = None
+with open(init_file, "r", encoding="utf-8") as f:
+    for line in f:
+        if line.startswith("__version__"):
+            version = line.split("=")[1].strip().strip('"').strip("'")
+            break
+
+if not version:
+    raise RuntimeError("バージョン情報が見つかりません")
 
 setup(
     name="horloq",
-    version="0.2.1",
+    version=version,
     packages=find_packages(),
     install_requires=[
         "customtkinter>=5.2.0",
