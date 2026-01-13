@@ -82,14 +82,27 @@ jobs:
           chmod +x release/horloq-linux-x86_64
           chmod +x release/horloq-macos-x86_64
 
+      - name: Prepare release notes
+        id: release_notes
+        run: |
+          # テンプレートを読み込んで変数を置換
+          TEMPLATE=$(cat .github/RELEASE_TEMPLATE.md)
+          TEMPLATE="${TEMPLATE//\{VERSION\}/${{ github.ref_name }}}"
+
+          # 前のバージョンを取得（簡易版）
+          PREVIOUS_VERSION=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "v0.1.0")
+          TEMPLATE="${TEMPLATE//\{PREVIOUS_VERSION\}/$PREVIOUS_VERSION}"
+
+          # GitHubの出力に設定（複数行対応）
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$TEMPLATE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: release/*
-          body: |
-            ## Horloq ${{ github.ref_name }}
-
-            ### 変更点
-            - リリースノートをここに記載してください。
-          draft: false
+          draft: true
           prerelease: false
+          generate_release_notes: true
+          body: ${{ steps.release_notes.outputs.RELEASE_BODY }}

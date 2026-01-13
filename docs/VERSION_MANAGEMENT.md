@@ -89,12 +89,63 @@ git push origin main --tags
 
 ### 5. GitHub Releasesで公開
 
-1. GitHubの「Releases」ページへ
-2. 「Draft a new release」をクリック
-3. タグ: `v0.3.0` を選択
-4. リリースノートを記載
-5. バイナリファイルを添付（オプション）
-6. 「Publish release」をクリック
+GitHub Actionsが自動的にドラフトリリースを作成します：
+
+1. [Releases ページ](https://github.com/Nyayuta1060/Horloq/releases)を開く
+2. ドラフトリリース `v0.3.0` を見つける
+3. リリースノートを編集：
+   - ✨ 新機能: 追加した機能を箇条書き
+   - 🐛 バグ修正: 修正したバグを記載
+   - 📝 その他の変更: ドキュメント更新など
+   - ⚠️ Breaking Changes: 互換性のない変更（あれば）
+4. ビルド成果物が正しく添付されているか確認
+5. **「Publish release」をクリック** → 公開完了！
+
+#### 自動ビルドの流れ
+
+```
+タグをプッシュ (git push --tags)
+  ↓
+GitHub Actions が起動
+  ↓
+Linux/Windows/macOS でビルド
+  ↓
+ドラフトリリースを作成（自動）
+  ↓
+あなたがリリースノートを編集
+  ↓
+「Publish release」で公開（手動）
+```
+
+#### リリースノートのテンプレート
+
+```markdown
+## 🎉 Horloq v0.3.0
+
+### ✨ 新機能
+
+- プラグインの自動更新通知機能を追加
+- Horloq本体のアップデートチェック機能を追加
+- Windows環境での依存ライブラリインストール問題を修正
+
+### 🐛 バグ修正
+
+- タイマープラグインのリセット機能が動作しない問題を修正
+- ウィンドウ位置が保存されない問題を修正
+
+### 📝 その他の変更
+
+- ドキュメントを最新仕様に更新
+- バージョン管理を一元化
+
+### ⚠️ Breaking Changes
+
+なし
+
+---
+
+**Full Changelog**: https://github.com/Nyayuta1060/Horloq/compare/v0.2.1...v0.3.0
+```
 
 ## ⚠️ やってはいけないこと
 
@@ -152,16 +203,36 @@ print(f"Horloq version: {horloq.__version__}")
 
 新しいバージョンをリリースする際のチェックリスト：
 
+### ローカルでの準備
 - [ ] `horloq/__init__.py`の`__version__`を更新
-- [ ] CHANGELOGに変更内容を記載
 - [ ] `python -c "import horloq; print(horloq.__version__)"` で確認
 - [ ] テストがすべてパス: `pytest`
-- [ ] ビルドが成功: `pyinstaller horloq.spec`
-- [ ] コミット: `git commit -m "chore: bump version to X.Y.Z"`
+- [ ] ローカルビルドが成功: `pyinstaller build.spec`
+
+### Git操作
+- [ ] 変更をコミット: `git commit -m "chore: bump version to X.Y.Z"`
 - [ ] タグ作成: `git tag vX.Y.Z`
 - [ ] プッシュ: `git push origin main --tags`
-- [ ] GitHub Releasesで公開
-- [ ] リリースノートに変更内容を記載
+
+### GitHub Actions（自動）
+- [ ] ビルドワークフローが成功（3プラットフォーム）
+- [ ] ドラフトリリースが作成される
+
+### 手動作業（重要！）
+- [ ] [Releases ページ](https://github.com/Nyayuta1060/Horloq/releases)を開く
+- [ ] ドラフトリリースを見つける
+- [ ] リリースノートを丁寧に編集：
+  - 新機能の説明
+  - バグ修正の詳細
+  - Breaking Changes（あれば）
+  - スクリーンショット（あれば）
+- [ ] ビルド成果物（3つのバイナリ）が添付されているか確認
+- [ ] **「Publish release」をクリック** 🎉
+
+### 公開後
+- [ ] リリースが正しく公開されているか確認
+- [ ] ダウンロードリンクが動作するか確認
+- [ ] 必要に応じてSNSで告知
 
 ## 🎯 なぜ一元管理が重要か
 
