@@ -111,6 +111,27 @@ class SettingsWindow(ctk.CTkToplevel):
             variable=self.check_updates_var,
         )
         check_updates_check.pack(anchor="w", padx=20, pady=10)
+        
+        # 設定のエクスポート/インポート
+        import_export_label = ctk.CTkLabel(tab, text="設定のバックアップ:", font=("Arial", 14, "bold"))
+        import_export_label.pack(anchor="w", padx=20, pady=(20, 5))
+        
+        button_frame = ctk.CTkFrame(tab)
+        button_frame.pack(fill="x", padx=20, pady=10)
+        
+        export_btn = ctk.CTkButton(
+            button_frame,
+            text="設定をエクスポート",
+            command=self._export_config,
+        )
+        export_btn.pack(side="left", padx=5)
+        
+        import_btn = ctk.CTkButton(
+            button_frame,
+            text="設定をインポート",
+            command=self._import_config,
+        )
+        import_btn.pack(side="left", padx=5)
     
     def _create_clock_tab(self):
         """時計タブを作成"""
@@ -138,6 +159,17 @@ class SettingsWindow(ctk.CTkToplevel):
         )
         seconds_check.pack(anchor="w", padx=20, pady=10)
         
+        # ミリ秒を表示
+        self.show_milliseconds_var = ctk.BooleanVar(
+            value=self.config.get("clock.show_milliseconds", False)
+        )
+        milliseconds_check = ctk.CTkCheckBox(
+            tab,
+            text="ミリ秒を表示",
+            variable=self.show_milliseconds_var,
+        )
+        milliseconds_check.pack(anchor="w", padx=20, pady=10)
+        
         # 日付を表示
         self.show_date_var = ctk.BooleanVar(
             value=self.config.get("clock.show_date", True)
@@ -148,6 +180,17 @@ class SettingsWindow(ctk.CTkToplevel):
             variable=self.show_date_var,
         )
         date_check.pack(anchor="w", padx=20, pady=10)
+        
+        # 曜日を表示
+        self.show_weekday_var = ctk.BooleanVar(
+            value=self.config.get("clock.show_weekday", True)
+        )
+        weekday_check = ctk.CTkCheckBox(
+            tab,
+            text="曜日を表示",
+            variable=self.show_weekday_var,
+        )
+        weekday_check.pack(anchor="w", padx=20, pady=10)
         
         # フォントサイズ
         font_frame = ctk.CTkFrame(tab)
@@ -173,6 +216,24 @@ class SettingsWindow(ctk.CTkToplevel):
             width=40,
         )
         font_value_label.pack(side="left", padx=5)
+        
+        # フォントファミリー
+        font_family_frame = ctk.CTkFrame(tab)
+        font_family_frame.pack(fill="x", padx=20, pady=10)
+        
+        font_family_label = ctk.CTkLabel(font_family_frame, text="フォント:")
+        font_family_label.pack(side="left", padx=5)
+        
+        available_fonts = ["Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana", "Georgia", "Comic Sans MS", "Trebuchet MS", "Impact"]
+        self.font_family_var = ctk.StringVar(
+            value=self.config.get("clock.font_family", "Arial")
+        )
+        font_family_menu = ctk.CTkOptionMenu(
+            font_family_frame,
+            values=available_fonts,
+            variable=self.font_family_var,
+        )
+        font_family_menu.pack(side="left", fill="x", expand=True, padx=5)
     
     def _create_theme_tab(self):
         """テーマタブを作成"""
@@ -321,8 +382,11 @@ class SettingsWindow(ctk.CTkToplevel):
         # 時計設定
         self.config.set("clock.format", "24h" if self.format_24h_var.get() else "12h")
         self.config.set("clock.show_seconds", self.show_seconds_var.get())
+        self.config.set("clock.show_milliseconds", self.show_milliseconds_var.get())
         self.config.set("clock.show_date", self.show_date_var.get())
+        self.config.set("clock.show_weekday", self.show_weekday_var.get())
         self.config.set("clock.font_size", self.font_size_var.get())
+        self.config.set("clock.font_family", self.font_family_var.get())
         
         # テーマ設定
         self.config.set("theme.name", self.theme_var.get())
@@ -341,3 +405,49 @@ class SettingsWindow(ctk.CTkToplevel):
         
         # ウィンドウを閉じる
         self.destroy()
+    
+    def _export_config(self):
+        """設定をエクスポート"""
+        from tkinter import filedialog
+        from pathlib import Path
+        
+        # ファイル保存ダイアログを表示
+        file_path = filedialog.asksaveasfilename(
+            parent=self,
+            title="設定をエクスポート",
+            defaultextension=".yaml",
+            filetypes=[("YAMLファイル", "*.yaml *.yml"), ("すべてのファイル", "*.*")],
+        )
+        
+        if file_path:
+            try:
+                self.config.export_config(Path(file_path))
+                # 成功メッセージを表示
+                self._show_message("成功", "設定をエクスポートしました")
+            except Exception as e:
+                self._show_message("エラー", f"エクスポートに失敗しました: {e}")
+    
+    def _import_config(self):
+        """設定をインポート"""
+        from tkinter import filedialog
+        from pathlib import Path
+        
+        # ファイル選択ダイアログを表示
+        file_path = filedialog.askopenfilename(
+            parent=self,
+            title="設定をインポート",
+            filetypes=[("YAMLファイル", "*.yaml *.yml"), ("すべてのファイル", "*.*")],
+        )
+        
+        if file_path:
+            try:
+                self.config.import_config(Path(file_path))
+                # 成功メッセージを表示
+                self._show_message("成功", "設定をインポートしました\nアプリを再起動してください")
+            except Exception as e:
+                self._show_message("エラー", f"インポートに失敗しました: {e}")
+    
+    def _show_message(self, title: str, message: str):
+        """メッセージダイアログを表示"""
+        from tkinter import messagebox
+        messagebox.showinfo(title, message, parent=self)

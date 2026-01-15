@@ -24,10 +24,13 @@ class ConfigManager:
         "clock": {
             "format": "24h",  # "12h" or "24h"
             "show_seconds": True,
+            "show_milliseconds": False,
             "show_date": True,
+            "show_weekday": True,
             "date_format": "%Y/%m/%d",
             "timezone": "Asia/Tokyo",
             "font_size": 48,
+            "font_family": "Arial",
         },
         "theme": {
             "name": "vscode_dark",
@@ -171,3 +174,47 @@ class ConfigManager:
                 result[key] = value
         
         return result
+    
+    def export_config(self, export_path: Path):
+        """
+        設定をファイルにエクスポート
+        
+        Args:
+            export_path: エクスポート先のパス
+        
+        Raises:
+            Exception: エクスポートに失敗した場合
+        """
+        try:
+            # ディレクトリが存在しない場合は作成
+            export_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(export_path, "w", encoding="utf-8") as f:
+                yaml.dump(self.config, f, allow_unicode=True, default_flow_style=False)
+        except Exception as e:
+            raise Exception(f"設定のエクスポートに失敗しました: {e}")
+    
+    def import_config(self, import_path: Path):
+        """
+        設定をファイルからインポート
+        
+        Args:
+            import_path: インポート元のパス
+        
+        Raises:
+            Exception: インポートに失敗した場合
+        """
+        try:
+            if not import_path.exists():
+                raise FileNotFoundError(f"ファイルが見つかりません: {import_path}")
+            
+            with open(import_path, "r", encoding="utf-8") as f:
+                loaded_config = yaml.safe_load(f) or {}
+            
+            # デフォルト設定にマージ
+            self.config = self._merge_config(self.DEFAULT_CONFIG, loaded_config)
+            
+            # 現在の設定ファイルに保存
+            self.save()
+        except Exception as e:
+            raise Exception(f"設定のインポートに失敗しました: {e}")

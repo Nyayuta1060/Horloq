@@ -17,9 +17,12 @@ class DigitalClock(ctk.CTkFrame):
         timezone: str = "Asia/Tokyo",
         format_24h: bool = True,
         show_seconds: bool = True,
+        show_milliseconds: bool = False,
         show_date: bool = True,
+        show_weekday: bool = True,
         date_format: str = "%Y/%m/%d",
         font_size: int = 48,
+        font_family: str = "Arial",
         **kwargs
     ):
         """
@@ -40,9 +43,12 @@ class DigitalClock(ctk.CTkFrame):
         self.timezone = pytz.timezone(timezone)
         self.format_24h = format_24h
         self.show_seconds = show_seconds
+        self.show_milliseconds = show_milliseconds
         self.show_date = show_date
+        self.show_weekday = show_weekday
         self.date_format = date_format
         self.font_size = font_size
+        self.font_family = font_family
         
         self._update_job: Optional[str] = None
         
@@ -55,7 +61,7 @@ class DigitalClock(ctk.CTkFrame):
         self.time_label = ctk.CTkLabel(
             self,
             text="00:00:00",
-            font=("Arial", self.font_size, "bold"),
+            font=(self.font_family, self.font_size, "bold"),
         )
         self.time_label.pack(pady=10)
         
@@ -64,9 +70,18 @@ class DigitalClock(ctk.CTkFrame):
             self.date_label = ctk.CTkLabel(
                 self,
                 text="2024/01/01",
-                font=("Arial", self.font_size // 3),
+                font=(self.font_family, self.font_size // 3),
             )
             self.date_label.pack()
+        
+        # 曜日ラベル
+        if self.show_weekday:
+            self.weekday_label = ctk.CTkLabel(
+                self,
+                text="Monday",
+                font=(self.font_family, self.font_size // 4),
+            )
+            self.weekday_label.pack()
     
     def apply_theme(self, theme):
         """
@@ -84,6 +99,10 @@ class DigitalClock(ctk.CTkFrame):
         # 日付ラベルの色を設定
         if self.show_date and hasattr(self, 'date_label'):
             self.date_label.configure(text_color=theme.fg_secondary or theme.fg)
+        
+        # 曜日ラベルの色を設定
+        if self.show_weekday and hasattr(self, 'weekday_label'):
+            self.weekday_label.configure(text_color=theme.fg_secondary or theme.fg)
     
     def _update_time(self):
         """時刻を更新"""
@@ -95,19 +114,32 @@ class DigitalClock(ctk.CTkFrame):
         else:
             time_format = "%I:%M:%S %p" if self.show_seconds else "%I:%M %p"
         
-        time_str = now.strftime(time_format)
+        # ミリ秒を追加
+        if self.show_milliseconds:
+            milliseconds = now.microsecond // 1000
+            time_str = f"{now.strftime(time_format)}.{milliseconds:03d}"
+        else:
+            time_str = now.strftime(time_format)
+        
         self.time_label.configure(text=time_str)
         
         # 日付更新
         if self.show_date:
             date_str = now.strftime(self.date_format)
             self.date_label.configure(text=date_str)
+        
+        # 曜日更新
+        if self.show_weekday and hasattr(self, 'weekday_label'):
+            weekday_names = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"]
+            weekday_str = weekday_names[now.weekday()]
+            self.weekday_label.configure(text=weekday_str)
     
     def _start_update(self):
         """更新を開始"""
         self._update_time()
-        # 1秒ごとに更新
-        self._update_job = self.after(1000, self._start_update)
+        # ミリ秒表示時は100ms、通常は1秒ごとに更新
+        interval = 100 if self.show_milliseconds else 1000
+        self._update_job = self.after(interval, self._start_update)
     
     def stop_update(self):
         """更新を停止"""

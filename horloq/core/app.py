@@ -146,9 +146,16 @@ class HorloqApp:
         # 秒の表示
         self.clock_widget.show_seconds = self.config.get("clock.show_seconds", True)
         
+        # ミリ秒の表示
+        self.clock_widget.show_milliseconds = self.config.get("clock.show_milliseconds", False)
+        
         # 日付の表示
         show_date = self.config.get("clock.show_date", True)
         self.clock_widget.show_date = show_date
+        
+        # フォントファミリー
+        font_family = self.config.get("clock.font_family", "Arial")
+        self.clock_widget.font_family = font_family
         
         if show_date:
             # 日付を表示する
@@ -157,7 +164,7 @@ class HorloqApp:
                 self.clock_widget.date_label = ctk.CTkLabel(
                     self.clock_widget,
                     text="",
-                    font=("Arial", self.clock_widget.font_size // 3),
+                    font=(font_family, self.clock_widget.font_size // 3),
                 )
                 self.clock_widget.apply_theme(self.themes.current_theme)
             # 日付ラベルを表示（再表示の場合も対応）
@@ -167,15 +174,38 @@ class HorloqApp:
             if hasattr(self.clock_widget, 'date_label'):
                 self.clock_widget.date_label.pack_forget()
         
+        # 曜日の表示
+        show_weekday = self.config.get("clock.show_weekday", True)
+        self.clock_widget.show_weekday = show_weekday
+        
+        if show_weekday:
+            # 曜日を表示する
+            if not hasattr(self.clock_widget, 'weekday_label'):
+                # 曜日ラベルが存在しない場合は新規作成
+                self.clock_widget.weekday_label = ctk.CTkLabel(
+                    self.clock_widget,
+                    text="",
+                    font=(font_family, self.clock_widget.font_size // 4),
+                )
+                self.clock_widget.apply_theme(self.themes.current_theme)
+            # 曜日ラベルを表示（再表示の場合も対応）
+            self.clock_widget.weekday_label.pack()
+        else:
+            # 曜日を非表示にする
+            if hasattr(self.clock_widget, 'weekday_label'):
+                self.clock_widget.weekday_label.pack_forget()
+        
         # 日付フォーマット
         self.clock_widget.date_format = self.config.get("clock.date_format", "%Y/%m/%d")
         
         # フォントサイズ
         font_size = self.config.get("clock.font_size", 48)
         self.clock_widget.font_size = font_size
-        self.clock_widget.time_label.configure(font=("Arial", font_size, "bold"))
+        self.clock_widget.time_label.configure(font=(font_family, font_size, "bold"))
         if hasattr(self.clock_widget, 'date_label'):
-            self.clock_widget.date_label.configure(font=("Arial", font_size // 3))
+            self.clock_widget.date_label.configure(font=(font_family, font_size // 3))
+        if hasattr(self.clock_widget, 'weekday_label'):
+            self.clock_widget.weekday_label.configure(font=(font_family, font_size // 4))
         
         # 即座に表示を更新
         self.clock_widget._update_time()
@@ -305,9 +335,12 @@ class HorloqApp:
             timezone=self.config.get("clock.timezone", "Asia/Tokyo"),
             format_24h=self.config.get("clock.format", "24h") == "24h",
             show_seconds=self.config.get("clock.show_seconds", True),
+            show_milliseconds=self.config.get("clock.show_milliseconds", False),
             show_date=self.config.get("clock.show_date", True),
+            show_weekday=self.config.get("clock.show_weekday", True),
             date_format=self.config.get("clock.date_format", "%Y/%m/%d"),
             font_size=self.config.get("clock.font_size", 48),
+            font_family=self.config.get("clock.font_family", "Arial"),
             fg_color="transparent",
         )
         self.clock_widget.pack(fill="both", expand=True)
