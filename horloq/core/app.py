@@ -711,7 +711,7 @@ class HorloqApp:
                 # プラグイン名とバージョン
                 name_label = ctk.CTkLabel(
                     plugin_frame,
-                    text=f"📦 {update['name']}",
+                    text=f"{update['name']}",
                     font=("Arial", 14, "bold"),
                 )
                 name_label.pack(anchor="w", padx=15, pady=(10, 5))

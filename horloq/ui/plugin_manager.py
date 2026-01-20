@@ -106,7 +106,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
         # カタログから選択
         browse_btn = ctk.CTkButton(
             button_container,
-            text="📦 カタログから選択",
+            text="カタログから選択",
             command=self._show_catalog_dialog,
             fg_color="#28a745",
             hover_color="#218838",
@@ -378,7 +378,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
             # タイトル（インストール済みの場合はバッジを追加）
             title_text = f"{name}"
             if is_installed:
-                title_text += " ✓"
+                title_text += " [インストール済み]"
             
             name_label = ctk.CTkLabel(
                 info_frame,
@@ -417,8 +417,8 @@ class PluginManagerWindow(ctk.CTkToplevel):
                 if success:
                     status_label.configure(text=message, text_color="green")
                     # インストールボタンを無効化
-                    install_btn.configure(state="disabled", text="✓ インストール済み", fg_color="gray")
-                    name_label.configure(text=f"{name} ✓", text_color="#4caf50")
+                    install_btn.configure(state="disabled", text="インストール済み", fg_color="gray")
+                    name_label.configure(text=f"{name} [インストール済み]", text_color="#4caf50")
                 else:
                     status_label.configure(text=message, text_color="red")
             
@@ -426,7 +426,7 @@ class PluginManagerWindow(ctk.CTkToplevel):
             if is_installed:
                 install_btn = ctk.CTkButton(
                     card,
-                    text="✓ インストール済み",
+                    text="インストール済み",
                     command=None,
                     state="disabled",
                     fg_color="gray",

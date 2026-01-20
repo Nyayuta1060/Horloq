@@ -13,7 +13,7 @@
 
 ## バージョン管理の基本
 
-### 📌 Single Source of Truth
+###  Single Source of Truth
 
 Horloqでは、**`horloq/__init__.py`の`__version__`がバージョン情報の唯一の情報源**です。
 
@@ -22,7 +22,7 @@ Horloqでは、**`horloq/__init__.py`の`__version__`がバージョン情報の
 __version__ = "0.2.1"
 ```
 
-## 🔄 自動的にバージョンが反映される場所
+##  自動的にバージョンが反映される場所
 
 以下のファイルは`horloq/__init__.py`から自動的にバージョンを読み込みます：
 
@@ -196,19 +196,19 @@ GitHub Actions 起動
 
 3. **リリースノートを編集**（テンプレートから）
    ```markdown
-   ## 🎉 Horloq v0.3.0
+   ## Horloq v0.3.0
    
-   ### ✨ 新機能
+   ### 新機能
    - プラグインの自動更新通知
    - Windows環境での依存ライブラリ自動インストール
    
-   ### 🐛 バグ修正
+   ### バグ修正
    - タイマープラグインのリセット機能を修正
    
-   ### 📝 その他の変更
+   ### その他の変更
    - ドキュメントを最新化
    
-   ### 📥 インストール
+   ###  インストール
    
    #### Windows
    1. `horloq-windows-x86_64.exe` をダウンロード
@@ -238,7 +238,7 @@ GitHub Actions 起動
    - horloq-windows-x86_64.exe
    - horloq-macos-x86_64
 
-5. **「Publish release」をクリック** 🎉
+5. **「Publish release」をクリック**
 
 ### 手動リリース（非推奨）
 
@@ -278,7 +278,7 @@ GitHub Actions 起動
   - Breaking Changes（あれば）
   - インストール手順
 - [ ] ビルド成果物（3つのバイナリ）が添付されているか確認
-- [ ] **「Publish release」をクリック** 🎉
+- [ ] **「Publish release」をクリック**
 
 ### 公開後
 - [ ] リリースが正しく公開されているか確認
@@ -316,7 +316,7 @@ pip install pyinstaller
 
 **問題**: 複数ファイルでバージョンがずれている
 
-**❌ 間違った方法**:
+**[NG] 間違った方法**:
 ```python
 # setup.py
 version = "0.3.0"
@@ -328,7 +328,7 @@ version = "0.2.1"
 __version__ = "0.2.0"
 ```
 
-**✅ 正しい方法**:
+**[OK] 正しい方法**:
 ```python
 # horloq/__init__.py のみ更新
 __version__ = "0.3.0"
@@ -371,10 +371,10 @@ print(f"Horloq version: {horloq.__version__}")
 __version__ = "0.2.1"
 
 # setup.py
-version = "0.3.0"  # 😱 不整合！
+version = "0.3.0"  # 不整合！
 
 # pyproject.toml
-version = "0.2.0"  # 😱 さらに不整合！
+version = "0.2.0"  # さらに不整合！
 ```
 
 → どれが正しいバージョンか分からない！

@@ -23,8 +23,8 @@ print(f"\nユーザーsite-packages: {user_site}")
 if user_site:
     user_site_path = Path(user_site)
     if user_site_path.exists():
-        print("  ✓ 存在します")
-        print(f"  sys.pathに含まれる: {'✓' if user_site in sys.path else '✗'}")
+        print("  [OK] 存在します")
+        print(f"  sys.pathに含まれる: {'[OK]' if user_site in sys.path else '[NG]'}")
         print("\n  インストール済みパッケージ (ディレクトリのみ):")
         try:
             for item in sorted(user_site_path.iterdir()):
@@ -33,7 +33,7 @@ if user_site:
         except Exception as e:
             print(f"    エラー: {e}")
     else:
-        print("  ✗ 存在しません")
+        print("  [NG] 存在しません")
 
 # ユーザーbase
 user_base = site.getuserbase()
@@ -42,17 +42,17 @@ if user_base and sys.platform == 'win32':
     scripts_dir = Path(user_base) / "Scripts"
     print(f"\nScriptsディレクトリ: {scripts_dir}")
     if scripts_dir.exists():
-        print("  ✓ 存在します")
-        print(f"  sys.pathに含まれる: {'✓' if str(scripts_dir) in sys.path else '✗'}")
+        print("  [OK] 存在します")
+        print(f"  sys.pathに含まれる: {'[OK]' if str(scripts_dir) in sys.path else '[NG]'}")
     else:
-        print("  ✗ 存在しません")
+        print("  [NG] 存在しません")
 
 # システムsite-packages
 system_site = site.getsitepackages()
 print(f"\nシステムsite-packages:")
 for path in system_site:
     print(f"  - {path}")
-    print(f"    sys.pathに含まれる: {'✓' if path in sys.path else '✗'}")
+    print(f"    sys.pathに含まれる: {'[OK]' if path in sys.path else '[NG]'}")
 
 print()
 print("=" * 60)
@@ -71,9 +71,9 @@ for package in packages_to_check:
     try:
         module = __import__(package)
         location = getattr(module, '__file__', 'N/A')
-        print(f"✓ {package}: {location}")
+        print(f"[OK] {package}: {location}")
     except ImportError as e:
-        print(f"✗ {package}: インポートできません ({e})")
+        print(f"[NG] {package}: インポートできません ({e})")
 
 print()
 print("=" * 60)

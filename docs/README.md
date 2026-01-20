@@ -3,31 +3,31 @@
 > Horloqプロジェクトの全ドキュメントへのガイドです。  
 > 目的に応じて適切なドキュメントをお選びください。
 
-## 🗺️ ドキュメントマップ
+## ドキュメントマップ
 
 ```
 docs/
 ├── README.md (このファイル)        - ドキュメント全体のナビゲーション
 │
-├── 📖 ユーザー向け
+├── ユーザー向け
 │   ├── FEATURES.md                 - 機能仕様書
 │   └── WINDOWS_TROUBLESHOOTING.md  - Windows環境のトラブルシューティング
 │
-├── 🔌 プラグイン開発者向け
+├── プラグイン開発者向け
 │   ├── PLUGIN_DEVELOPMENT.md       - プラグイン開発ガイド
 │   └── EXAMPLE_PLUGINS.md          - サンプルプラグイン集
 │
-├── 👨‍💻 コントリビューター向け
+├── コントリビューター向け
 │   ├── DEVELOPMENT.md              - 開発環境セットアップ
 │   ├── ARCHITECTURE.md             - システムアーキテクチャ
 │   ├── PYTHON_IMPLEMENTATION.md    - Python実装詳細
 │   └── VERSION_MANAGEMENT.md       - バージョン管理 & リリース手順
 │
-└── 📋 その他
+└──  その他
     └── assets/                     - 画像・リソースファイル
 ```
 
-## 🎯 目的別ガイド
+##  目的別ガイド
 
 ### 初めて使う方
 
@@ -64,7 +64,7 @@ docs/
 - **[WINDOWS_TROUBLESHOOTING.md](WINDOWS_TROUBLESHOOTING.md)** - Windows固有の問題
 - **[GitHub Issues](https://github.com/Nyayuta1060/Horloq/issues)** - その他の問題
 
-## 📚 ドキュメント詳細
+## ドキュメント詳細
 
 ### ユーザー向けドキュメント
 
@@ -174,7 +174,7 @@ docs/
 - 新バージョンをリリースする
 - バージョン管理の仕組みを理解したい
 
-## 📝 ドキュメント編集方針
+## ドキュメント編集方針
 
 ### 原則
 
@@ -198,7 +198,7 @@ docs/
 - 古い情報は削除または更新（コメントアウトしない）
 - 重複した情報は避け、相互リンクを活用
 
-## 🔗 外部リソース
+##  外部リソース
 
 ### 公式リンク
 - [GitHub Repository](https://github.com/Nyayuta1060/Horloq)
@@ -212,7 +212,7 @@ docs/
 - [PyInstaller Manual](https://pyinstaller.org/en/stable/)
 - [セマンティックバージョニング](https://semver.org/lang/ja/)
 
-## 💡 ドキュメントへの貢献
+## ドキュメントへの貢献
 
 ドキュメントの改善提案や誤字脱字の修正は歓迎します！
 

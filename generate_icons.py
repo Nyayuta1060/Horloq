@@ -13,7 +13,7 @@ def generate_ico(png_path: str, ico_path: str):
     # 複数サイズを含むicoファイルを作成
     sizes = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
     img.save(ico_path, format='ICO', sizes=sizes)
-    print(f"✓ {ico_path} を生成しました")
+    print(f"[OK] {ico_path} を生成しました")
 
 def generate_icns(png_path: str, icns_path: str):
     """macOS用.icnsファイルを生成"""
@@ -42,11 +42,11 @@ def generate_icns(png_path: str, icns_path: str):
                 capture_output=True
             )
             if result.returncode == 0:
-                print(f"✓ {icns_path} を生成しました")
+                print(f"[OK] {icns_path} を生成しました")
             else:
-                print(f"⚠ iconutil実行エラー（macOS以外では正常）: {result.stderr.decode()}")
+                print(f"[WARN] iconutil実行エラー（macOS以外では正常）: {result.stderr.decode()}")
         else:
-            print(f"⚠ iconutilが見つかりません（macOS以外では正常）")
+            print(f"[WARN] iconutilが見つかりません（macOS以外では正常）")
         
         # iconsetディレクトリをクリーンアップ
         import shutil

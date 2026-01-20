@@ -1,20 +1,20 @@
-## 🎉 Horloq {VERSION}
+## Horloq {VERSION}
 
 <!-- 
 このリリースの概要を1-2文で記載してください
 例：デスクトップ時計アプリHorloqの新バージョンをリリースしました！
 -->
 
-### ✨ 新機能
+### 新機能
 
 <!-- 
 追加した新機能を箇条書きで記載
 例：
-- 🔔 自動更新通知システムを追加
-- 📊 統計表示機能を追加
+- 自動更新通知システムを追加
+- 統計表示機能を追加
 -->
 
-### 🐛 バグ修正
+### バグ修正
 
 <!-- 
 修正したバグを箇条書きで記載
@@ -23,7 +23,7 @@
 - ウィンドウ位置が保存されない問題を修正
 -->
 
-### 📝 その他の変更
+### その他の変更
 
 <!-- 
 ドキュメント更新、リファクタリングなど
@@ -32,7 +32,7 @@
 - コードのリファクタリング
 -->
 
-### ⚠️ Breaking Changes
+### Breaking Changes
 
 <!-- 
 互換性のない変更がある場合のみ記載
@@ -42,7 +42,7 @@
 
 ---
 
-## 📥 インストール方法
+## インストール方法
 
 ### Windows
 1. `horloq-windows-x86_64.exe` をダウンロード
@@ -64,13 +64,13 @@ chmod +x horloq
 
 ---
 
-## 📚 ドキュメント
+## ドキュメント
 
 - [README](https://github.com/Nyayuta1060/Horloq/blob/main/README.md)
 - [プラグイン開発ガイド](https://github.com/Nyayuta1060/Horloq/blob/main/docs/PLUGIN_DEVELOPMENT.md)
 - [公式プラグイン集](https://github.com/Nyayuta1060/Horloq-Plugins)
 
-## 🔧 トラブルシューティング
+## トラブルシューティング
 
 問題が発生した場合は [Issues](https://github.com/Nyayuta1060/Horloq/issues) でご報告ください。
 
