@@ -5,6 +5,7 @@
 import importlib
 import importlib.util
 import sys
+import site
 from pathlib import Path
 from typing import Dict, List, Type, Optional
 from .base import PluginBase
@@ -22,6 +23,7 @@ class PluginLoader:
         """
         self.plugin_dirs = plugin_dirs
         self._loaded_plugins: Dict[str, Type[PluginBase]] = {}
+        self._ensure_user_site_packages()
     
     def discover_plugins(self) -> List[str]:
         """
@@ -74,6 +76,10 @@ class PluginLoader:
         # すでに読み込まれている場合
         if plugin_name in self._loaded_plugins:
             return self._loaded_plugins[plugin_name]
+        
+        # ユーザーsite-packagesが確実にパスに含まれているか再確認
+        # （プラグインロード時に再度確認することで、後からインストールされたパッケージも利用可能に）
+        self._ensure_user_site_packages()
         
         # プラグインファイルを検索
         plugin_file = self._find_plugin_file(plugin_name)
@@ -177,6 +183,43 @@ class PluginLoader:
                 return obj
         
         return None
+    
+    def _ensure_user_site_packages(self):
+        """
+        ユーザーsite-packagesディレクトリがsys.pathに含まれていることを確認
+        Windowsでの--userインストールされたパッケージを読み込むために必要
+        """
+        try:
+            # ユーザーsite-packagesのパスを取得
+            user_site = site.getusersitepackages()
+            
+            # sys.pathに追加されていなければ追加
+            if user_site and user_site not in sys.path:
+                sys.path.insert(0, user_site)
+                print(f"ユーザーsite-packagesをパスに追加: {user_site}")
+            
+            # Windowsの場合、さらにScriptsディレクトリも確認
+            if sys.platform == 'win32':
+                import os
+                user_base = site.getuserbase()
+                if user_base:
+                    scripts_dir = Path(user_base) / "Scripts"
+                    if scripts_dir.exists() and str(scripts_dir) not in sys.path:
+                        sys.path.insert(0, str(scripts_dir))
+                        print(f"ユーザーScriptsディレクトリをパスに追加: {scripts_dir}")
+                    
+                    # デバッグ情報: 実際にパッケージがインストールされているか確認
+                    if user_site and Path(user_site).exists():
+                        print(f"ユーザーsite-packages内のパッケージ:")
+                        try:
+                            for item in Path(user_site).iterdir():
+                                if item.is_dir() and not item.name.startswith('.'):
+                                    print(f"  - {item.name}")
+                        except Exception as e:
+                            print(f"  パッケージ一覧の取得エラー: {e}")
+        
+        except Exception as e:
+            print(f"ユーザーsite-packagesの設定中にエラー: {e}")
     
     @property
     def loaded_plugins(self) -> Dict[str, Type[PluginBase]]:

@@ -337,6 +337,10 @@ class PluginInstaller:
             if sys.platform == 'win32':
                 # --user オプションで権限エラーを回避
                 extra_args.append('--user')
+                # site.USER_SITEを有効化するため
+                if not hasattr(sys, 'frozen'):
+                    import site
+                    site.ENABLE_USER_SITE = True
             
             # pipコマンドを構築
             pip_cmd = [python_exe, "-m", "pip", "install", "-r", str(requirements_path)]
@@ -390,6 +394,15 @@ class PluginInstaller:
                     f"python -m pip install -r {requirements_path.name}\n\n"
                     f"詳細: {error_msg}"
                 )
+            
+            # インストール成功後、site-packagesを再読み込み
+            if sys.platform == 'win32':
+                try:
+                    import site
+                    import importlib
+                    importlib.reload(site)
+                except Exception:
+                    pass  # リロードに失敗しても続行
             
             pkg_list = ', '.join(installed_packages)
             return True, f"依存関係をインストールしました: {pkg_list}"

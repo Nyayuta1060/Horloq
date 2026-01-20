@@ -35,6 +35,17 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Get version
+        id: get_version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -45,11 +56,20 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           pyinstaller build.spec
+          if [[ -f dist/horloq ]]; then
+            VERSION="${{ steps.get_version.outputs.VERSION }}"
+            mv dist/horloq dist/horloq-$VERSION
+          fi
 
       - name: Build with PyInstaller (Windows)
         if: runner.os == 'Windows'
         run: |
           pyinstaller build.spec
+          if (Test-Path dist/horloq.exe) {
+            $VERSION = "${{ steps.get_version.outputs.VERSION }}"
+            Move-Item dist/horloq.exe dist/horloq-$VERSION.exe
+          }
+        shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -73,14 +93,40 @@ jobs:
       - name: Display structure
         run: ls -R artifacts
 
+      - name: Get version for release
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Prepare release assets
         run: |
           mkdir -p release
-          cp artifacts/horloq-linux/horloq release/horloq-linux-x86_64
-          cp artifacts/horloq-windows.exe/horloq.exe release/horloq-windows-x86_64.exe
-          cp artifacts/horloq-macos/horloq release/horloq-macos-x86_64
-          chmod +x release/horloq-linux-x86_64
-          chmod +x release/horloq-macos-x86_64
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          
+          # Linux
+          if [ -f artifacts/horloq-linux/horloq-$VERSION ]; then
+            cp artifacts/horloq-linux/horloq-$VERSION release/horloq-linux-x86_64-$VERSION
+          elif [ -f artifacts/horloq-linux/horloq ]; then
+            cp artifacts/horloq-linux/horloq release/horloq-linux-x86_64-$VERSION
+          fi
+          
+          # Windows
+          if [ -f artifacts/horloq-windows.exe/horloq-$VERSION.exe ]; then
+            cp artifacts/horloq-windows.exe/horloq-$VERSION.exe release/horloq-windows-x86_64-$VERSION.exe
+          elif [ -f artifacts/horloq-windows.exe/horloq.exe ]; then
+            cp artifacts/horloq-windows.exe/horloq.exe release/horloq-windows-x86_64-$VERSION.exe
+          fi
+          
+          # macOS
+          if [ -f artifacts/horloq-macos/horloq-$VERSION ]; then
+            cp artifacts/horloq-macos/horloq-$VERSION release/horloq-macos-x86_64-$VERSION
+          elif [ -f artifacts/horloq-macos/horloq ]; then
+            cp artifacts/horloq-macos/horloq release/horloq-macos-x86_64-$VERSION
+          fi
+          
+          chmod +x release/horloq-linux-x86_64-$VERSION 2>/dev/null || true
+          chmod +x release/horloq-macos-x86_64-$VERSION 2>/dev/null || true
 
       - name: Prepare release notes
         id: release_notes
