@@ -110,8 +110,16 @@ class PluginLoader:
             self._loaded_plugins[plugin_name] = plugin_class
             return plugin_class
             
+        except ImportError as e:
+            print(f"プラグインの依存関係エラー ({plugin_name}): {e}")
+            print(f"  モジュール名: {e.name if hasattr(e, 'name') else '不明'}")
+            print(f"  ヒント: プラグインの依存ライブラリがインストールされていない可能性があります")
+            print(f"  sys.path: {sys.path[:3]}...") # 最初の3つだけ表示
+            return None
         except Exception as e:
+            import traceback
             print(f"プラグインの読み込みエラー ({plugin_name}): {e}")
+            print(f"  詳細: {traceback.format_exc()}")
             return None
     
     def unload_plugin(self, plugin_name: str):
@@ -190,7 +198,35 @@ class PluginLoader:
         Windowsでの--userインストールされたパッケージを読み込むために必要
         """
         try:
-            # ユーザーsite-packagesのパスを取得
+            import os
+            
+            # PyInstallerでビルドされた場合の特別処理
+            if getattr(sys, 'frozen', False):
+                # Windowsの場合、手動でパスを構築
+                if sys.platform == 'win32':
+                    # ユーザープロファイルから直接パスを構築
+                    appdata = os.environ.get('APPDATA')
+                    if appdata:
+                        # Pythonのバージョンを取得
+                        py_version = f"Python{sys.version_info.major}{sys.version_info.minor}"
+                        user_site = Path(appdata) / "Python" / py_version / "site-packages"
+                        
+                        if user_site.exists() and str(user_site) not in sys.path:
+                            sys.path.insert(0, str(user_site))
+                            print(f"[ビルド版] ユーザーsite-packagesをパスに追加: {user_site}")
+                            
+                            # パッケージ一覧を表示
+                            try:
+                                packages = [item.name for item in user_site.iterdir() 
+                                          if item.is_dir() and not item.name.startswith('.') 
+                                          and not item.name.endswith('.dist-info')]
+                                if packages:
+                                    print(f"  検出されたパッケージ: {', '.join(sorted(packages)[:5])}...")
+                            except Exception:
+                                pass
+                return
+            
+            # 通常のPython環境の場合
             user_site = site.getusersitepackages()
             
             # sys.pathに追加されていなければ追加
@@ -200,7 +236,6 @@ class PluginLoader:
             
             # Windowsの場合、さらにScriptsディレクトリも確認
             if sys.platform == 'win32':
-                import os
                 user_base = site.getuserbase()
                 if user_base:
                     scripts_dir = Path(user_base) / "Scripts"

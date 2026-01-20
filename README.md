@@ -66,17 +66,19 @@ Horloqは、デスクトップ上に常駐する高機能時計アプリケー�
 <summary><b>Linux</b></summary>
 
 ```bash
-wget https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-linux-x86_64
-chmod +x horloq-linux-x86_64
-./horloq-linux-x86_64
+# 最新版をダウンロード（ファイル名にバージョン番号が含まれます）
+wget https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-linux-x86_64-0.3.4
+chmod +x horloq-linux-x86_64-*
+./horloq-linux-x86_64-*
 ```
+
+または、[Releasesページ](https://github.com/Nyayuta1060/Horloq/releases/latest)から最新版をダウンロードしてください。
 </details>
 
 <details>
 <summary><b>Windows</b></summary>
 
-1. [horloq-windows-x86_64.exe](https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-windows-x86_64.exe) をダウンロード
-2. ダブルクリックして実行
+[Releasesページ](https://github.com/Nyayuta1060/Horloq/releases/latest)から `horloq-windows-x86_64-X.X.X.exe` をダウンロードし、ダブルクリックで実行してください。
 
 > **注意**: Windows Defenderの警告が出る場合は「詳細情報」→「実行」をクリック
 </details>
@@ -85,10 +87,13 @@ chmod +x horloq-linux-x86_64
 <summary><b>macOS</b></summary>
 
 ```bash
-curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-macos-x86_64
+# 最新版をダウンロード（ファイル名にバージョン番号が含まれます）
+curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/latest/download/horloq-macos-x86_64-0.3.4
 chmod +x horloq
 ./horloq
 ```
+
+または、[Releasesページ](https://github.com/Nyayuta1060/Horloq/releases/latest)から最新版をダウンロードしてください。
 </details>
 
 ### ソースからビルド

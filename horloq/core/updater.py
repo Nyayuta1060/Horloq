@@ -15,6 +15,8 @@ class UpdateChecker:
     
     def __init__(self):
         self.current_version = __version__
+        self.latest_version = None
+        self.latest_assets = []
     
     def check_for_updates(self) -> Tuple[bool, Optional[str], Optional[str]]:
         """
@@ -36,6 +38,10 @@ class UpdateChecker:
             latest_version = data.get('tag_name', '').lstrip('v')
             release_url = data.get('html_url', '')
             release_notes = data.get('body', '')
+            
+            # アセット情報を保存
+            self.latest_version = latest_version
+            self.latest_assets = data.get('assets', [])
             
             if not latest_version:
                 return False, None, None
@@ -90,13 +96,15 @@ class UpdateChecker:
         Returns:
             ダウンロードURL
         """
-        base_url = "https://github.com/Nyayuta1060/Horloq/releases/latest/download/"
+        # 最新バージョンが設定されている場合は、そのバージョンを使用
+        version = self.latest_version if self.latest_version else self.current_version
+        base_url = f"https://github.com/Nyayuta1060/Horloq/releases/latest/download/"
         
         if platform == 'windows':
-            return f"{base_url}horloq-windows-x86_64.exe"
+            return f"{base_url}horloq-windows-x86_64-{version}.exe"
         elif platform == 'linux':
-            return f"{base_url}horloq-linux-x86_64"
+            return f"{base_url}horloq-linux-x86_64-{version}"
         elif platform == 'macos':
-            return f"{base_url}horloq-macos-x86_64"
+            return f"{base_url}horloq-macos-x86_64-{version}"
         else:
             return "https://github.com/Nyayuta1060/Horloq/releases/latest"

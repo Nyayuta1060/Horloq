@@ -211,19 +211,19 @@ GitHub Actions 起動
    ###  インストール
    
    #### Windows
-   1. `horloq-windows-x86_64.exe` をダウンロード
+   1. `horloq-windows-x86_64-0.3.0.exe` をダウンロード
    2. ダブルクリックで実行
    
    #### Linux
    ```bash
-   wget https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-linux-x86_64
-   chmod +x horloq-linux-x86_64
-   ./horloq-linux-x86_64
+   wget https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-linux-x86_64-0.3.0
+   chmod +x horloq-linux-x86_64-0.3.0
+   ./horloq-linux-x86_64-0.3.0
    ```
    
    #### macOS
    ```bash
-   curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-macos-x86_64
+   curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/download/v0.3.0/horloq-macos-x86_64-0.3.0
    chmod +x horloq
    ./horloq
    ```
@@ -233,10 +233,10 @@ GitHub Actions 起動
    **Full Changelog**: https://github.com/Nyayuta1060/Horloq/compare/v0.2.1...v0.3.0
    ```
 
-4. **ビルド成果物を確認**
-   - horloq-linux-x86_64
-   - horloq-windows-x86_64.exe
-   - horloq-macos-x86_64
+4. **ビルド成果物を確認**（バージョン番号付き）
+   - horloq-linux-x86_64-0.3.0
+   - horloq-windows-x86_64-0.3.0.exe
+   - horloq-macos-x86_64-0.3.0
 
 5. **「Publish release」をクリック**
 

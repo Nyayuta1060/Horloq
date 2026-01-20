@@ -736,14 +736,15 @@ class HorloqApp:
         button_frame = ctk.CTkFrame(popup, fg_color="transparent")
         button_frame.pack(pady=15)
         
-        # プラグイン管理を開くボタン
-        open_manager_btn = ctk.CTkButton(
-            button_frame,
-            text="プラグイン管理で更新",
-            command=lambda: [popup.destroy(), self._on_plugin_manager()],
-            width=150,
-        )
-        open_manager_btn.pack(side="left", padx=5)
+        # プラグイン管理を開くボタン（プラグインの更新がある場合のみ表示）
+        if self.pending_updates:
+            open_manager_btn = ctk.CTkButton(
+                button_frame,
+                text="プラグイン管理で更新",
+                command=lambda: [popup.destroy(), self._on_plugin_manager()],
+                width=150,
+            )
+            open_manager_btn.pack(side="left", padx=5)
         
         # 閉じるボタン
         close_btn = ctk.CTkButton(

@@ -45,19 +45,19 @@
 ## インストール方法
 
 ### Windows
-1. `horloq-windows-x86_64.exe` をダウンロード
+1. `horloq-windows-x86_64-{VERSION}.exe` をダウンロード
 2. ダブルクリックで実行
 
 ### Linux
 ```bash
-wget https://github.com/Nyayuta1060/Horloq/releases/download/{VERSION}/horloq-linux-x86_64
-chmod +x horloq-linux-x86_64
-./horloq-linux-x86_64
+wget https://github.com/Nyayuta1060/Horloq/releases/download/{VERSION}/horloq-linux-x86_64-{VERSION}
+chmod +x horloq-linux-x86_64-{VERSION}
+./horloq-linux-x86_64-{VERSION}
 ```
 
 ### macOS
 ```bash
-curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/download/{VERSION}/horloq-macos-x86_64
+curl -L -o horloq https://github.com/Nyayuta1060/Horloq/releases/download/{VERSION}/horloq-macos-x86_64-{VERSION}
 chmod +x horloq
 ./horloq
 ```
