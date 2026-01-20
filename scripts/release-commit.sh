@@ -15,6 +15,18 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 echo -e "${GREEN}Horloq Release Commit Script${NC}"
 echo "=================================="
 
+# 現在のバージョンを取得して表示
+INIT_FILE="$PROJECT_ROOT/horloq/__init__.py"
+if [ ! -f "$INIT_FILE" ]; then
+    echo -e "${RED}Error: $INIT_FILE not found${NC}"
+    exit 1
+fi
+
+CURRENT_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' "$INIT_FILE")
+echo ""
+echo -e "${YELLOW}Current version: ${NC}$CURRENT_VERSION"
+echo ""
+
 # バージョン番号の入力
 read -p "Enter version tag (e.g., v0.3.0): " VERSION
 
@@ -26,15 +38,6 @@ fi
 
 # v を除いたバージョン番号
 VERSION_NUMBER="${VERSION#v}"
-
-# horloq/__init__.py からバージョンを取得
-INIT_FILE="$PROJECT_ROOT/horloq/__init__.py"
-if [ ! -f "$INIT_FILE" ]; then
-    echo -e "${RED}Error: $INIT_FILE not found${NC}"
-    exit 1
-fi
-
-CURRENT_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' "$INIT_FILE")
 
 # バージョンの整合性確認
 echo ""
